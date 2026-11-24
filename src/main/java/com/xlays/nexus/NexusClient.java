@@ -105,7 +105,8 @@ public final class NexusClient {
         }
         if (enabled("Armor Status")) {
             int pieces = 0;
-            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})\n                if (!mc.player.getItemBySlot(slot).isEmpty()) pieces++;
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
+                if (!mc.player.getItemBySlot(slot).isEmpty()) pieces++;
             text(g, "ARMOR  " + pieces + "/4 equipped", x, y); y += line;
         }
         if (enabled("Player Status")) {
