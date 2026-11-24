@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -34,7 +33,6 @@ public final class VisualModules {
     public static boolean scanDiamond = true;
     public static boolean scanDebris = true;
     public static boolean scanChests = true;
-    public static boolean scanCrystals = true;
     private static double oldGamma = Double.NaN;
     private static double oldDamageTilt = Double.NaN;
     private static final Set<net.minecraft.world.level.block.Block> SEARCH_BLOCKS = Set.of(
@@ -111,12 +109,6 @@ public final class VisualModules {
                     AABB box = new AABB(pos.getX(), pos.getY(), pos.getZ(),
                         pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1).inflate(0.015D);
                     ShapeRenderer.renderShape(pose, consumer, Shapes.create(box), 0, 0, 0, blockColor, 2.0F);
-                }
-            }
-            if (scanCrystals) {
-                for (EndCrystal crystal : mc.level.getEntitiesOfClass(EndCrystal.class, mc.player.getBoundingBox().inflate(radius))) {
-                    ShapeRenderer.renderShape(pose, consumer, Shapes.create(crystal.getBoundingBox().inflate(0.08D)),
-                        0, 0, 0, blockColor, 2.0F);
                 }
             }
         }
