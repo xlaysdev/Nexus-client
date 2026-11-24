@@ -19,7 +19,8 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import org.lwjgl.glfw.GLFW;\nimport com.xlays.nexus.combat.CombatModules;
+import org.lwjgl.glfw.GLFW;
+import com.xlays.nexus.combat.CombatModules;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -75,7 +76,13 @@ public final class NexusClient {
         add("Low Health Warning", "Combat", false);
         add("Critical Hit Indicator", "Combat", false);
         add("Nearby Players", "Combat", false);
-        add("Enemy Health Bar", "Combat", false);\n        add("AutoTotem", "Combat", false);\n        add("CrystalAura", "Combat", false);\n        add("AutoArmor", "Combat", false);\n        add("OffhandManager", "Combat", false);\n        add("Reach", "Combat", false);\n        add("Rotations", "Combat", true);
+        add("Enemy Health Bar", "Combat", false);
+        add("AutoTotem", "Combat", false);
+        add("CrystalAura", "Combat", false);
+        add("AutoArmor", "Combat", false);
+        add("OffhandManager", "Combat", false);
+        add("Reach", "Combat", false);
+        add("Rotations", "Combat", true);
         add("Watermark", "HUD", true);
         add("FPS", "HUD", true);
         add("Coordinates", "HUD", true);
@@ -127,7 +134,10 @@ public final class NexusClient {
                 performAttack(mc, crosshairTarget);
             }
 
-            CombatModules.tick(mc);\n        }\n\n        long cutoff = System.currentTimeMillis() - 1000;
+            CombatModules.tick(mc);
+        }
+
+        long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
     }
 
