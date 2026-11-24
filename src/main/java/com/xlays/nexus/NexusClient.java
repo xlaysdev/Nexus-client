@@ -118,7 +118,7 @@ public final class NexusClient {
         MODULES.register(new Speed());
         MODULES.register(new Fly());
         MODULES.register(new NoFall());
-        add("Sprint", "Movement", false);
+        MODULES.register(new Sprint());
         MODULES.register(new Step());
         MODULES.register(new Velocity());
         MODULES.register(new Safewalk());
