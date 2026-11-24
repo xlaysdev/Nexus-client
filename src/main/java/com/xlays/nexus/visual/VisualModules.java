@@ -1,5 +1,7 @@
 package com.xlays.nexus.visual;
 
+import com.xlays.nexus.NexusClient;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -64,7 +66,7 @@ public final class VisualModules {
 
         PoseStack pose = event.getPoseStack();
         if (pose == null) return;
-        Vec3 camera = event.getCamera().position();
+        Vec3 camera = mc.gameRenderer.getMainCamera().position();
         pose.pushPose();
         pose.translate(-camera.x, -camera.y, -camera.z);
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
