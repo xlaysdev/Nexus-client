@@ -114,7 +114,22 @@ public final class ClickGuiScreen extends Screen {
             addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  +"),
                 b -> { VisualModules.crosshairSize = Math.min(14, VisualModules.crosshairSize + 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX + half + 6, top + 181, half, 25).build());
-            int rowY = top + 215;
+            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR COLOR  •  " + String.format("#%06X", VisualModules.crosshairColor & 0xFFFFFF)),
+                b -> { VisualModules.crosshairColor = cycleColor(VisualModules.crosshairColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 211, contentW, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("DIAMOND ORE  •  " + (VisualModules.scanDiamond ? "ON" : "OFF")),
+                b -> { VisualModules.scanDiamond = !VisualModules.scanDiamond; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 241, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("ANCIENT DEBRIS  •  " + (VisualModules.scanDebris ? "ON" : "OFF")),
+                b -> { VisualModules.scanDebris = !VisualModules.scanDebris; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 241, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("CHESTS  •  " + (VisualModules.scanChests ? "ON" : "OFF")),
+                b -> { VisualModules.scanChests = !VisualModules.scanChests; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 271, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("END CRYSTALS  •  " + (VisualModules.scanCrystals ? "ON" : "OFF")),
+                b -> { VisualModules.scanCrystals = !VisualModules.scanCrystals; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 271, half, 25).build());
+            int rowY = top + 301;
             for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
                 if (!feature.category.equals(selected)) continue;
                 if (rowY > top + panelHeight - 58) break;
