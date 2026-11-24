@@ -17,7 +17,6 @@ public final class MovementModules {
     public static float velocityScale = 0.0F;
     public static float timerMultiplier = 1.15F;
     public static String speedMode = "Normal";
-    public static String flyMode = "Vanilla";
     private static boolean wasFlying;
     private static boolean previousMayfly;
 
@@ -50,13 +49,7 @@ public final class MovementModules {
                 wasFlying = true;
             }
             player.getAbilities().mayfly = true;
-            if ("Packet".equals(flyMode) && mc.getConnection() != null) {
-                player.getAbilities().flying = true;
-                mc.getConnection().send(new ServerboundPlayerAbilitiesPacket(player.getAbilities()));
-                mc.getConnection().send(new ServerboundMovePlayerPacket.StatusOnly(true));
-            } else {
-                player.getAbilities().flying = true;
-            }
+            player.getAbilities().flying = true;
             Vec3 motion = player.getDeltaMovement();
             double vertical = 0.0D;
             if (mc.options.keyJump.isDown()) vertical += verticalSpeed;
