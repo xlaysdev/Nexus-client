@@ -24,16 +24,16 @@ import com.xlays.nexus.combat.CombatModules;
 import com.xlays.nexus.movement.MovementModules;
 import com.xlays.nexus.visual.VisualModules;
 import com.xlays.nexus.visual.OreESP;
+import com.xlays.nexus.module.Module;
+import com.xlays.nexus.module.ModuleManager;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Mod(value = NexusClient.MOD_ID, dist = Dist.CLIENT)
 public final class NexusClient {
     public static final String MOD_ID = "nexus";
-    public static final Map<String, Feature> FEATURES = new LinkedHashMap<>();
+    public static final ModuleManager MODULES = new ModuleManager();
     public static final int[] ACCENTS = {0xFF45E6C4, 0xFF58A6FF, 0xFFB58CFF, 0xFFFFB86B, 0xFFFF6B8A};
     public static int accentIndex = 0;
     public static int hudX = 12;
@@ -120,7 +120,7 @@ public final class NexusClient {
     }
 
     private static void add(String name, String category, boolean enabled) {
-        FEATURES.put(name, new Feature(name, category, enabled));
+        MODULES.register(new Module(name, Module.Category.valueOf(category.toUpperCase(java.util.Locale.ROOT)), enabled) {});
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
@@ -428,18 +428,9 @@ public final class NexusClient {
 
     public static int accent() { return ACCENTS[Math.max(0, Math.min(ACCENTS.length - 1, accentIndex))]; }
     public static boolean enabled(String name) {
-        Feature f = FEATURES.get(name);
-        return f != null && f.enabled;
+        return MODULES.isEnabled(name);
     }
-    public static void toggle(Feature f) { f.enabled = !f.enabled; saveConfig(); }
+    public static void toggle(Module module) { module.toggle(); saveConfig(); }
     public static void saveConfig() { NexusConfig.save(); }
 
-    public static final class Feature {
-        public final String name;
-        public final String category;
-        public boolean enabled;
-        private Feature(String name, String category, boolean enabled) {
-            this.name = name; this.category = category; this.enabled = enabled;
-        }
-    }
 }
