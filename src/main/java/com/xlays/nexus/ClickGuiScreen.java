@@ -137,6 +137,14 @@ public final class ClickGuiScreen extends Screen {
         g.drawString(font, "V1  /  CLIENT CONTROL CENTER", left + 75, top + 16, 0xFFB8C8D0, false);
         g.drawString(font, selected.toUpperCase(), left + sidebarWidth + 18, top + 65, 0xFFFFFFFF, false);
         g.drawString(font, "CLIENT-SIDE UTILITIES", left + 15, top + 51, 0xFF78909C, false);
+        if (selected.equals("Profiles")) {
+            int profileY = top + 193;
+            for (String profile : NexusConfig.profiles()) {
+                if (profileY > top + panelHeight - 55) break;
+                g.drawString(font, "- " + profile, left + sidebarWidth + 18, profileY, 0xFFB8C8D0, false);
+                profileY += 15;
+            }
+        }
         g.drawString(font, notice, left + 15, top + panelHeight - 19, 0xFF78909C, false);
         super.render(g, mouseX, mouseY, partialTick);
     }
