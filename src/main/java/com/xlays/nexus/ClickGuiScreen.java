@@ -110,10 +110,9 @@ public final class ClickGuiScreen extends Screen {
         int shown = 0;
         for (String profile : profiles) {
             if (shown >= 5 || y + shown * 17 > top + panelHeight - 55) break;
-            font.drawShadow(new GuiGraphics(Minecraft.getInstance().renderBuffers().bufferSource()), profile, x, y + shown * 17, 0xFFB8C8D0);
             shown++;
         }
-        if (profiles.isEmpty()) notice = "No saved profiles yet.";
+        if (profiles.isEmpty()) notice = "No saved profiles yet. Save one above.";
         else notice = "Saved profiles: " + String.join(", ", profiles.subList(0, Math.min(4, profiles.size())));
     }
 
