@@ -43,7 +43,7 @@ public final class CombatModules {
             && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
             LivingEntity target = findTarget(mc, enabled("Reach") ? reachDistance : 3.0F);
             if (target != null) {
-                if (killAuraRotations || enabled("Rotations")) rotateToward(mc, target);
+                if (enabled("Rotations")) rotateToward(mc, target);
                 mc.gameMode.attack(mc.player, target);
                 mc.player.swing(InteractionHand.MAIN_HAND);
                 lastAuraAttack = now;
