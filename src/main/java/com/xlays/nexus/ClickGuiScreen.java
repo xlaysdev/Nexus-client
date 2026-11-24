@@ -27,13 +27,13 @@ public final class ClickGuiScreen extends Screen {
 
     @Override
     protected void init() {
-        panelWidth = Math.min(760, Math.max(240, width - 16));
-        panelHeight = Math.min(620, Math.max(220, height - 16));
+        panelWidth = Math.max(1, Math.min(760, width - 16));
+        panelHeight = Math.max(1, Math.min(620, height - 16));
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
-        sidebarWidth = Math.max(92, Math.min(145, panelWidth / 4));
+        sidebarWidth = Math.min(Math.max(1, panelWidth - 8), Math.max(50, Math.min(145, panelWidth / 4)));
         int navY = top + 61;
-        int navW = sidebarWidth - 18;
+        int navW = Math.max(1, sidebarWidth - 18);
         for (String category : CATEGORIES) {
             final String target = category;
             addRenderableWidget(Button.builder(Component.literal((selected.equals(category) ? "◆ " : "  ") + category),
@@ -43,7 +43,7 @@ public final class ClickGuiScreen extends Screen {
         }
 
         int contentX = left + sidebarWidth + 18;
-        int contentW = panelWidth - sidebarWidth - 34;
+        int contentW = Math.max(1, panelWidth - sidebarWidth - 34);
         if (selected.equals("Settings")) {
             addRenderableWidget(Button.builder(Component.literal("ACCENT COLOR  •  " + accentName()),
                 b -> { NexusClient.accentIndex = (NexusClient.accentIndex + 1) % NexusClient.ACCENTS.length; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Settings")); })
@@ -67,7 +67,7 @@ public final class ClickGuiScreen extends Screen {
                 b -> { NexusClient.saveConfig(); notice = "Settings saved."; })
                 .bounds(contentX, top + 256, contentW, 27).build());
         } else if (selected.equals("Movement")) {
-            int half = contentW / 2 - 3;
+            int half = Math.max(1, contentW / 2 - 3);
             addRenderableWidget(Button.builder(Component.literal("SPEED  -  " + String.format("%.2fx", MovementModules.speedMultiplier)),
                 b -> { MovementModules.speedMultiplier = Math.max(1.0F, MovementModules.speedMultiplier - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX, top + 91, half, 25).build());
@@ -137,7 +137,7 @@ public final class ClickGuiScreen extends Screen {
             for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
                 int col = oreIndex % 3;
                 int row = oreIndex / 3;
-                int cellW = (contentW - 12) / 3;
+                int cellW = Math.max(1, (contentW - 12) / 3);
                 addRenderableWidget(Button.builder(Component.literal(group.label + "  " + (OreESP.isEnabled(group) ? "ON" : "OFF")),
                     b -> { OreESP.setEnabled(group, !OreESP.isEnabled(group)); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                     .bounds(contentX + col * (cellW + 6), top + 331 + row * 28, cellW, 24).build());
@@ -192,9 +192,9 @@ public final class ClickGuiScreen extends Screen {
 
         addRenderableWidget(Button.builder(Component.literal("SAVE"),
             b -> { NexusClient.saveConfig(); notice = "Configuration saved."; })
-            .bounds(left + 10, top + panelHeight - 38, sidebarWidth - 20, 24).build());
+            .bounds(left + 4, top + panelHeight - 34, Math.max(1, sidebarWidth - 8), 22).build());
         addRenderableWidget(Button.builder(Component.literal("CLOSE"),
-            b -> Minecraft.getInstance().setScreen(null)).bounds(left + panelWidth - 88, top + panelHeight - 38, 78, 24).build());
+            b -> Minecraft.getInstance().setScreen(null)).bounds(Math.max(left + 4, left + panelWidth - 82), top + panelHeight - 34, Math.max(1, Math.min(78, panelWidth - 8)), 22).build());
     }
 
     private void gappedProfileList(int x, int w, int y) {
@@ -231,10 +231,10 @@ public final class ClickGuiScreen extends Screen {
         g.fill(left, top, left + panelWidth, top + 3, NexusClient.accent());
         g.fill(left, top + 48, left + panelWidth, top + 49, 0xFF263A46);
         g.fill(left + sidebarWidth, top + 49, left + sidebarWidth + 1, top + panelHeight - 48, 0xFF263A46);
-        g.drawString(font, "NEXUS", left + 15, top + 15, NexusClient.accent(), false);
-        g.drawString(font, "V1  /  CLIENT CONTROL CENTER", left + 75, top + 16, 0xFFB8C8D0, false);
+        g.drawString(font, "NEXUS", left + 10, top + 15, NexusClient.accent(), false);
+        if (panelWidth >= 300) g.drawString(font, "V1  /  CLIENT CONTROL CENTER", left + 75, top + 16, 0xFFB8C8D0, false);
         g.drawString(font, selected.toUpperCase(), left + sidebarWidth + 18, top + 65, 0xFFFFFFFF, false);
-        g.drawString(font, "CLIENT-SIDE UTILITIES", left + 15, top + 51, 0xFF78909C, false);
+        if (panelWidth >= 300) g.drawString(font, "CLIENT-SIDE UTILITIES", left + 15, top + 51, 0xFF78909C, false);
         if (selected.equals("Profiles")) {
             int profileY = top + 193;
             for (String profile : NexusConfig.profiles()) {
@@ -243,7 +243,7 @@ public final class ClickGuiScreen extends Screen {
                 profileY += 15;
             }
         }
-        g.drawString(font, notice, left + 15, top + panelHeight - 19, 0xFF78909C, false);
+        if (panelHeight >= 190) g.drawString(font, notice, left + 10, top + panelHeight - 17, 0xFF78909C, false);
         super.render(g, mouseX, mouseY, partialTick);
     }
 
