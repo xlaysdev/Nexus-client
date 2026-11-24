@@ -127,7 +127,7 @@ public final class NexusClient {
                 performAttack(mc, crosshairTarget);
             }
 
-            CombatModules.tick(mc);\n        }\n\n                long cutoff = System.currentTimeMillis() - 1000;
+            CombatModules.tick(mc);\n        }\n\n        long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
     }
 
