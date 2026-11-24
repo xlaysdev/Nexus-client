@@ -1,5 +1,7 @@
 package com.xlays.nexus;
 
+import com.xlays.nexus.visual.VisualModules;
+
 import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
@@ -72,6 +74,14 @@ public final class NexusConfig {
         p.setProperty("hud.scale", Integer.toString(NexusClient.hudScale));
         p.setProperty("theme.accent", Integer.toString(NexusClient.accentIndex));
         p.setProperty("hud.showBackground", Boolean.toString(NexusClient.hudBackground));
+        p.setProperty("visual.enemyColor", Integer.toString(VisualModules.enemyColor));
+        p.setProperty("visual.friendColor", Integer.toString(VisualModules.friendColor));
+        p.setProperty("visual.blockColor", Integer.toString(VisualModules.blockColor));
+        p.setProperty("visual.crosshairColor", Integer.toString(VisualModules.crosshairColor));
+        p.setProperty("visual.crosshairSize", Integer.toString(VisualModules.crosshairSize));
+        p.setProperty("visual.esp3d", Boolean.toString(VisualModules.esp3d));
+        p.setProperty("visual.nametags", Boolean.toString(VisualModules.showNametags));
+        p.setProperty("visual.tracers", Boolean.toString(VisualModules.showTracers));
         return p;
     }
 
@@ -100,6 +110,14 @@ public final class NexusConfig {
             NexusClient.hudScale = clamp(parse(p, "hud.scale", NexusClient.hudScale), 75, 150);
             NexusClient.accentIndex = clamp(parse(p, "theme.accent", NexusClient.accentIndex), 0, NexusClient.ACCENTS.length - 1);
             NexusClient.hudBackground = Boolean.parseBoolean(p.getProperty("hud.showBackground", Boolean.toString(NexusClient.hudBackground)));
+            VisualModules.enemyColor = parse(p, "visual.enemyColor", VisualModules.enemyColor);
+            VisualModules.friendColor = parse(p, "visual.friendColor", VisualModules.friendColor);
+            VisualModules.blockColor = parse(p, "visual.blockColor", VisualModules.blockColor);
+            VisualModules.crosshairColor = parse(p, "visual.crosshairColor", VisualModules.crosshairColor);
+            VisualModules.crosshairSize = clamp(parse(p, "visual.crosshairSize", VisualModules.crosshairSize), 2, 14);
+            VisualModules.esp3d = Boolean.parseBoolean(p.getProperty("visual.esp3d", Boolean.toString(VisualModules.esp3d)));
+            VisualModules.showNametags = Boolean.parseBoolean(p.getProperty("visual.nametags", Boolean.toString(VisualModules.showNametags)));
+            VisualModules.showTracers = Boolean.parseBoolean(p.getProperty("visual.tracers", Boolean.toString(VisualModules.showTracers)));
         } catch (IOException e) {
             System.err.println("[NEXUS] Could not load config: " + e.getMessage());
         }
