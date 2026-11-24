@@ -39,6 +39,8 @@ import com.xlays.nexus.modules.movement.InventoryMove;
 import com.xlays.nexus.modules.movement.FastPlace;
 import com.xlays.nexus.modules.render.VisualModules;
 import com.xlays.nexus.modules.render.OreESP;
+import com.xlays.nexus.modules.render.Fullbright;
+import com.xlays.nexus.modules.render.NoHurtCam;
 import com.xlays.nexus.modules.Module;
 import com.xlays.nexus.modules.ModuleManager;
 
@@ -127,9 +129,9 @@ public final class NexusClient {
         add("Custom Crosshair", "Render", false);
         add("ESP", "Render", false);
         add("BlockESP", "Render", false);
-        add("OreESP", "Render", false);
-        add("Fullbright", "Render", false);
-        add("NoHurtCam", "Render", false);
+        MODULES.register(new OreESP());
+        MODULES.register(new Fullbright());
+        MODULES.register(new NoHurtCam());
     }
 
     private static void add(String name, String category, boolean enabled) {
@@ -150,8 +152,6 @@ public final class NexusClient {
             leftWasDown = false;
         }
         MODULES.tick();
-        VisualModules.tick(mc);
-        OreESP.tick();
 
         long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
