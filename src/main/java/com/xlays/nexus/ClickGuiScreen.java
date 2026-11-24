@@ -126,9 +126,6 @@ public final class ClickGuiScreen extends Screen {
             addRenderableWidget(Button.builder(Component.literal("CHESTS  •  " + (VisualModules.scanChests ? "ON" : "OFF")),
                 b -> { VisualModules.scanChests = !VisualModules.scanChests; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 271, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("END CRYSTALS  •  " + (VisualModules.scanCrystals ? "ON" : "OFF")),
-                b -> { VisualModules.scanCrystals = !VisualModules.scanCrystals; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 271, half, 25).build());
             int rowY = top + 301;
             for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
                 if (!feature.category.equals(selected)) continue;
