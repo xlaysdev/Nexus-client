@@ -22,7 +22,6 @@ import java.util.Comparator;
 public final class CombatModules {
     public static float killAuraCps = 8.0F;
     public static float reachDistance = 3.5F;
-    public static boolean killAuraRotations = true;
     private static long lastAuraAttack;
     private static long lastCrystalAction;
     private static long lastInventoryAction;
