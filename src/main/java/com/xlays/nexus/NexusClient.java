@@ -81,7 +81,7 @@ public final class NexusClient {
             else if (mc.screen == null) mc.setScreen(new ClickGuiScreen());
         }
         if (mc.player != null && mc.screen == null) {
-            boolean down = GLFW.glfwGetMouseButton(mc.getWindow().getWindow(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+            boolean down = GLFW.glfwGetMouseButton(mc.getWindow().handle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
             if (down && !leftWasDown) LEFT_CLICKS.addLast(System.currentTimeMillis());
             leftWasDown = down;
         } else {
@@ -99,9 +99,9 @@ public final class NexusClient {
         int y = hudY;
         int line = 12;
         float scale = hudScale / 100.0f;
-        g.pose().pushPose();
-        g.pose().translate(x, y, 0);
-        g.pose().scale(scale, scale, 1.0f);
+        g.pose().pushMatrix();
+        g.pose().translate((float) x, (float) y);
+        g.pose().scale(scale, scale);
         x = 0;
         y = 0;
 
@@ -161,7 +161,7 @@ public final class NexusClient {
             }
             if (enabled("Armor Status")) { text(g, "ARMOR  " + pieces + "/4 equipped", x, y); y += line; }
             if (enabled("Armor Durability")) {
-                text(g, "DURABILITY  " + (total == 0 ? "N/A" : (remaining * 100 / Math.max(1, totalDurability)) + "% remaining"), x, y);
+                text(g, "DURABILITY  " + (totalDurability == 0 ? "N/A" : (remaining * 100 / Math.max(1, totalDurability)) + "% remaining"), x, y);
                 y += line;
             }
         }
@@ -171,14 +171,14 @@ public final class NexusClient {
         }
         if (enabled("Biome")) {
             text(g, "BIOME  " + mc.level.getBiome(mc.player.blockPosition()).unwrapKey()
-                .map(key -> key.location().getPath().toUpperCase()).orElse("UNKNOWN"), x, y);
+                .map(key -> key.identifier().getPath().toUpperCase()).orElse("UNKNOWN"), x, y);
             y += line;
         }
         if (enabled("Session Timer")) {
             long seconds = (System.currentTimeMillis() - STARTED_AT) / 1000;
             text(g, String.format("SESSION  %02d:%02d:%02d", seconds / 3600, (seconds / 60) % 60, seconds % 60), x, y);
         }
-        g.pose().popPose();
+        g.pose().popMatrix();
         if (enabled("Custom Crosshair")) {
             int cx = mc.getWindow().getGuiScaledWidth() / 2;
             int cy = mc.getWindow().getGuiScaledHeight() / 2;
