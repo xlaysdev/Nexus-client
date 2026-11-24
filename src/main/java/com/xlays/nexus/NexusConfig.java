@@ -1,6 +1,7 @@
 package com.xlays.nexus;
 
 import com.xlays.nexus.visual.VisualModules;
+import com.xlays.nexus.visual.OreESP;
 
 import net.neoforged.fml.loading.FMLPaths;
 
@@ -85,6 +86,10 @@ public final class NexusConfig {
         p.setProperty("visual.scanDiamond", Boolean.toString(VisualModules.scanDiamond));
         p.setProperty("visual.scanDebris", Boolean.toString(VisualModules.scanDebris));
         p.setProperty("visual.scanChests", Boolean.toString(VisualModules.scanChests));
+        p.setProperty("ore.radius", Integer.toString(OreESP.getRadius()));
+        for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
+            p.setProperty("ore." + group.name(), Boolean.toString(OreESP.isEnabled(group)));
+        }
         return p;
     }
 
@@ -124,6 +129,10 @@ public final class NexusConfig {
             VisualModules.scanDiamond = Boolean.parseBoolean(p.getProperty("visual.scanDiamond", Boolean.toString(VisualModules.scanDiamond)));
             VisualModules.scanDebris = Boolean.parseBoolean(p.getProperty("visual.scanDebris", Boolean.toString(VisualModules.scanDebris)));
             VisualModules.scanChests = Boolean.parseBoolean(p.getProperty("visual.scanChests", Boolean.toString(VisualModules.scanChests)));
+            OreESP.setRadius(clamp(parse(p, "ore.radius", OreESP.getRadius()), 4, 32));
+            for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
+                OreESP.setEnabled(group, Boolean.parseBoolean(p.getProperty("ore." + group.name(), Boolean.toString(OreESP.isEnabled(group)))));
+            }
         } catch (IOException e) {
             System.err.println("[NEXUS] Could not load config: " + e.getMessage());
         }
