@@ -37,7 +37,9 @@ import com.xlays.nexus.modules.movement.Step;
 import com.xlays.nexus.modules.movement.Safewalk;
 import com.xlays.nexus.modules.movement.InventoryMove;
 import com.xlays.nexus.modules.movement.FastPlace;
-import com.xlays.nexus.modules.render.VisualModules;
+import com.xlays.nexus.modules.render.VisualSettings;
+import com.xlays.nexus.modules.render.ESP;
+import com.xlays.nexus.modules.render.BlockESP;
 import com.xlays.nexus.modules.render.OreESP;
 import com.xlays.nexus.modules.render.Fullbright;
 import com.xlays.nexus.modules.render.NoHurtCam;
@@ -73,7 +75,8 @@ public final class NexusClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderHud);
         NeoForge.EVENT_BUS.addListener(Velocity::onKnockback);
-        NeoForge.EVENT_BUS.addListener(VisualModules::onWorldRender);
+        NeoForge.EVENT_BUS.addListener(ESP::onWorldRender);
+        NeoForge.EVENT_BUS.addListener(BlockESP::onWorldRender);
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) { event.register(OPEN_GUI); }
@@ -127,8 +130,8 @@ public final class NexusClient {
         add("Session Timer", "Misc", false);
         add("Biome", "Misc", false);
         add("Custom Crosshair", "Render", false);
-        add("ESP", "Render", false);
-        add("BlockESP", "Render", false);
+        MODULES.register(new ESP());
+        MODULES.register(new BlockESP());
         MODULES.register(new OreESP());
         MODULES.register(new Fullbright());
         MODULES.register(new NoHurtCam());
@@ -383,8 +386,8 @@ public final class NexusClient {
         if (enabled("Custom Crosshair")) {
             int cx = mc.getWindow().getGuiScaledWidth() / 2;
             int cy = mc.getWindow().getGuiScaledHeight() / 2;
-            int size = Math.max(2, Math.min(14, VisualModules.crosshairSize));
-            int color = VisualModules.crosshairColor;
+            int size = Math.max(2, Math.min(14, VisualSettings.crosshairSize));
+            int color = VisualSettings.crosshairColor;
             g.fill(cx - size, cy, cx + size + 1, cy + 1, color);
             g.fill(cx, cy - size, cx + 1, cy + size + 1, color);
         }
