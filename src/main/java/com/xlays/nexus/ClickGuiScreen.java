@@ -7,7 +7,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import com.xlays.nexus.modules.movement.MovementSettings;
-import com.xlays.nexus.modules.render.VisualModules;
+import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.OreESP;
 import com.xlays.nexus.modules.Module;
 
@@ -92,41 +92,41 @@ public final class ClickGuiScreen extends Screen {
                 .bounds(contentX + half + 6, top + 181, half, 25).build());
         } else if (selected.equals("Render")) {
             int half = contentW / 2 - 3;
-            addRenderableWidget(Button.builder(Component.literal("ESP BOX  •  " + (VisualModules.esp3d ? "3D" : "2D")),
-                b -> { VisualModules.esp3d = !VisualModules.esp3d; Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("ESP BOX  •  " + (VisualSettings.esp3d ? "3D" : "2D")),
+                b -> { VisualSettings.esp3d = !VisualSettings.esp3d; Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("ENEMY COLOR  •  " + String.format("#%06X", VisualModules.enemyColor & 0xFFFFFF)),
-                b -> { VisualModules.enemyColor = cycleColor(VisualModules.enemyColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("ENEMY COLOR  •  " + String.format("#%06X", VisualSettings.enemyColor & 0xFFFFFF)),
+                b -> { VisualSettings.enemyColor = cycleColor(VisualSettings.enemyColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX + half + 6, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("FRIEND COLOR  •  " + String.format("#%06X", VisualModules.friendColor & 0xFFFFFF)),
-                b -> { VisualModules.friendColor = cycleColor(VisualModules.friendColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("FRIEND COLOR  •  " + String.format("#%06X", VisualSettings.friendColor & 0xFFFFFF)),
+                b -> { VisualSettings.friendColor = cycleColor(VisualSettings.friendColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 121, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("BLOCK COLOR  •  " + String.format("#%06X", VisualModules.blockColor & 0xFFFFFF)),
-                b -> { VisualModules.blockColor = cycleColor(VisualModules.blockColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("BLOCK COLOR  •  " + String.format("#%06X", VisualSettings.blockColor & 0xFFFFFF)),
+                b -> { VisualSettings.blockColor = cycleColor(VisualSettings.blockColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX + half + 6, top + 121, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("NAMETAGS  •  " + (VisualModules.showNametags ? "ON" : "OFF")),
-                b -> { VisualModules.showNametags = !VisualModules.showNametags; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("NAMETAGS  •  " + (VisualSettings.showNametags ? "ON" : "OFF")),
+                b -> { VisualSettings.showNametags = !VisualSettings.showNametags; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("TRACERS  •  " + (VisualModules.showTracers ? "ON" : "OFF")),
-                b -> { VisualModules.showTracers = !VisualModules.showTracers; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("TRACERS  •  " + (VisualSettings.showTracers ? "ON" : "OFF")),
+                b -> { VisualSettings.showTracers = !VisualSettings.showTracers; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX + half + 6, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  −  " + VisualModules.crosshairSize),
-                b -> { VisualModules.crosshairSize = Math.max(2, VisualModules.crosshairSize - 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  −  " + VisualSettings.crosshairSize),
+                b -> { VisualSettings.crosshairSize = Math.max(2, VisualSettings.crosshairSize - 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 181, half, 25).build());
             addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  +"),
-                b -> { VisualModules.crosshairSize = Math.min(14, VisualModules.crosshairSize + 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                b -> { VisualSettings.crosshairSize = Math.min(14, VisualSettings.crosshairSize + 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX + half + 6, top + 181, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR COLOR  •  " + String.format("#%06X", VisualModules.crosshairColor & 0xFFFFFF)),
-                b -> { VisualModules.crosshairColor = cycleColor(VisualModules.crosshairColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR COLOR  •  " + String.format("#%06X", VisualSettings.crosshairColor & 0xFFFFFF)),
+                b -> { VisualSettings.crosshairColor = cycleColor(VisualSettings.crosshairColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 211, contentW, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("DIAMOND ORE  •  " + (VisualModules.scanDiamond ? "ON" : "OFF")),
-                b -> { VisualModules.scanDiamond = !VisualModules.scanDiamond; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("DIAMOND ORE  •  " + (VisualSettings.scanDiamond ? "ON" : "OFF")),
+                b -> { VisualSettings.scanDiamond = !VisualSettings.scanDiamond; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 241, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("ANCIENT DEBRIS  •  " + (VisualModules.scanDebris ? "ON" : "OFF")),
-                b -> { VisualModules.scanDebris = !VisualModules.scanDebris; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("ANCIENT DEBRIS  •  " + (VisualSettings.scanDebris ? "ON" : "OFF")),
+                b -> { VisualSettings.scanDebris = !VisualSettings.scanDebris; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX + half + 6, top + 241, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CHESTS  •  " + (VisualModules.scanChests ? "ON" : "OFF")),
-                b -> { VisualModules.scanChests = !VisualModules.scanChests; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+            addRenderableWidget(Button.builder(Component.literal("CHESTS  •  " + (VisualSettings.scanChests ? "ON" : "OFF")),
+                b -> { VisualSettings.scanChests = !VisualSettings.scanChests; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 271, half, 25).build());
             addRenderableWidget(Button.builder(Component.literal("ORE RADIUS  −  " + OreESP.getRadius()),
                 b -> { OreESP.setRadius(OreESP.getRadius() - 2); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
