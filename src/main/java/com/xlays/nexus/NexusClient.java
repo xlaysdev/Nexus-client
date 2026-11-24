@@ -24,8 +24,8 @@ import com.xlays.nexus.modules.combat.CombatModules;
 import com.xlays.nexus.modules.movement.MovementModules;
 import com.xlays.nexus.modules.render.VisualModules;
 import com.xlays.nexus.modules.render.OreESP;
-import com.xlays.nexus.module.Module;
-import com.xlays.nexus.module.ModuleManager;
+import com.xlays.nexus.modules.Module;
+import com.xlays.nexus.modules.ModuleManager;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
