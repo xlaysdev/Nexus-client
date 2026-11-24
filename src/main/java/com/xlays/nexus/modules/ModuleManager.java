@@ -39,4 +39,8 @@ public final class ModuleManager {
     public void toggle(String name) {
         get(name).ifPresent(Module::toggle);
     }
+
+    public void tick() {
+        for (Module module : modules.values()) if (module.enabled) module.onTick();
+    }
 }
