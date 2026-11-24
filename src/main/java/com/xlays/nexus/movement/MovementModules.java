@@ -20,8 +20,6 @@ public final class MovementModules {
     public static String flyMode = "Vanilla";
     private static boolean wasFlying;
     private static boolean previousMayfly;
-    private static float previousStep = 0.6F;
-    private static boolean stepCaptured;
 
     private MovementModules() {}
 
@@ -83,15 +81,12 @@ public final class MovementModules {
             player.setSprinting(true);
         }
 
-        if (NexusClient.enabled("Step")) {
-            if (!stepCaptured) {
-                previousStep = player.maxUpStep();
-                stepCaptured = true;
+        if (NexusClient.enabled("Step") && player.onGround() && player.horizontalCollision
+            && hasMovementInput(player)) {
+            var raisedBox = player.getBoundingBox().move(0.0D, 1.0D, 0.0D);
+            if (mc.level.noCollision(player, raisedBox)) {
+                player.setPos(player.getX(), player.getY() + 1.0D, player.getZ());
             }
-            player.setMaxUpStep(1.5F);
-        } else if (stepCaptured) {
-            player.setMaxUpStep(previousStep);
-            stepCaptured = false;
         }
 
         if (NexusClient.enabled("Safewalk") && player.onGround()) {
@@ -109,12 +104,12 @@ public final class MovementModules {
         }
 
         if (NexusClient.enabled("InventoryMove") && mc.screen != null) {
-            if (mc.options.keyUp.isDown()) player.input.up = true;
-            if (mc.options.keyDown.isDown()) player.input.down = true;
-            if (mc.options.keyLeft.isDown()) player.input.left = true;
-            if (mc.options.keyRight.isDown()) player.input.right = true;
-            if (mc.options.keyJump.isDown()) player.input.jumping = true;
-            if (mc.options.keyShift.isDown()) player.setSprinting(false);
+            player.zza = (mc.options.keyUp.isDown() ? 1.0F : 0.0F)
+                - (mc.options.keyDown.isDown() ? 1.0F : 0.0F);
+            player.xxa = (mc.options.keyLeft.isDown() ? 1.0F : 0.0F)
+                - (mc.options.keyRight.isDown() ? 1.0F : 0.0F);
+            if (mc.options.keyJump.isDown() && player.onGround()) player.jumpFromGround();
+            if (mc.options.keySprint.isDown() && player.zza > 0.0F) player.setSprinting(true);
         }
 
         if (NexusClient.enabled("FastPlace")) setRightClickDelay(mc, 0);
@@ -129,11 +124,11 @@ public final class MovementModules {
     }
 
     private static boolean hasMovementInput(Player player) {
-        return player.input != null && (player.input.forwardImpulse != 0.0F || player.input.leftImpulse != 0.0F);
+        return player.zza != 0.0F || player.xxa != 0.0F;
     }
 
     private static boolean hasForwardInput(Player player) {
-        return player.input != null && player.input.forwardImpulse > 0.0F;
+        return player.zza > 0.0F;
     }
 
     private static double reduceTowardZero(double value, double amount) {
@@ -143,8 +138,7 @@ public final class MovementModules {
 
     private static boolean hasSupport(Minecraft mc, Player player, double dx, double dz) {
         var box = player.getBoundingBox().move(dx, -0.06D, dz);
-        return !mc.level.getBlockCollisions(player, box).iterator().hasNext() ? false
-            : mc.level.getBlockCollisions(player, box).iterator().hasNext();
+        return mc.level.getBlockCollisions(player, box).iterator().hasNext();
     }
 
     private static void setTimer(Minecraft mc, float multiplier) {
