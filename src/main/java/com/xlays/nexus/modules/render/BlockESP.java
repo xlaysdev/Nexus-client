@@ -24,11 +24,11 @@ public final class BlockESP extends Module {
   BlockPos center=mc.player.blockPosition();int radius=12;
   for(BlockPos pos:BlockPos.betweenClosed(center.offset(-radius,-radius,-radius),center.offset(radius,radius,radius))){
    var block=mc.level.getBlockState(pos).getBlock();
-   boolean wanted=(VisualModules.scanDiamond&&(block==Blocks.DIAMOND_ORE||block==Blocks.DEEPSLATE_DIAMOND_ORE))
-    ||(VisualModules.scanDebris&&block==Blocks.ANCIENT_DEBRIS)
-    ||(VisualModules.scanChests&&(block==Blocks.CHEST||block==Blocks.TRAPPED_CHEST||block==Blocks.ENDER_CHEST));
+   boolean wanted=(VisualSettings.scanDiamond&&(block==Blocks.DIAMOND_ORE||block==Blocks.DEEPSLATE_DIAMOND_ORE))
+    ||(VisualSettings.scanDebris&&block==Blocks.ANCIENT_DEBRIS)
+    ||(VisualSettings.scanChests&&(block==Blocks.CHEST||block==Blocks.TRAPPED_CHEST||block==Blocks.ENDER_CHEST));
    if(wanted){AABB box=new AABB(pos.getX(),pos.getY(),pos.getZ(),pos.getX()+1,pos.getY()+1,pos.getZ()+1).inflate(.015);
-    ShapeRenderer.renderShape(pose,out,Shapes.create(box),0,0,0,VisualModules.blockColor,2);}
+    ShapeRenderer.renderShape(pose,out,Shapes.create(box),0,0,0,VisualSettings.blockColor,2);}
   }
   buffers.endBatch(type);pose.popPose();
  }
