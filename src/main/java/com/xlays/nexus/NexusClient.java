@@ -19,7 +19,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFW;\nimport com.xlays.nexus.combat.CombatModules;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -75,7 +75,7 @@ public final class NexusClient {
         add("Low Health Warning", "Combat", false);
         add("Critical Hit Indicator", "Combat", false);
         add("Nearby Players", "Combat", false);
-        add("Enemy Health Bar", "Combat", false);
+        add("Enemy Health Bar", "Combat", false);\n        add("AutoTotem", "Combat", false);\n        add("CrystalAura", "Combat", false);\n        add("AutoArmor", "Combat", false);\n        add("OffhandManager", "Combat", false);\n        add("Reach", "Combat", false);\n        add("Rotations", "Combat", true);
         add("Watermark", "HUD", true);
         add("FPS", "HUD", true);
         add("Coordinates", "HUD", true);
@@ -127,25 +127,7 @@ public final class NexusClient {
                 performAttack(mc, crosshairTarget);
             }
 
-            // Basic close-range aura: selects the nearest visible player within vanilla reach.
-            if (enabled("KillAura") && now - lastAuraAttackAt >= 50L
-                && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
-                Player target = mc.level.getEntitiesOfClass(Player.class,
-                    mc.player.getBoundingBox().inflate(4.0D),
-                    candidate -> candidate != mc.player && candidate.isAlive()
-                        && mc.player.hasLineOfSight(candidate))
-                    .stream()
-                    .filter(candidate -> mc.player.distanceTo(candidate) <= 3.0F)
-                    .min(java.util.Comparator.comparingDouble(mc.player::distanceTo))
-                    .orElse(null);
-                if (target != null) {
-                    performAttack(mc, target);
-                    lastAuraAttackAt = now;
-                }
-            }
-        }
-
-        long cutoff = System.currentTimeMillis() - 1000;
+            CombatModules.tick(mc);\n        }\n\n                long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
     }
 
