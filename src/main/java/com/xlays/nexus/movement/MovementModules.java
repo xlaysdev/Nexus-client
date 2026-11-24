@@ -2,7 +2,6 @@ package com.xlays.nexus.movement;
 
 import com.xlays.nexus.NexusClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -65,8 +64,7 @@ public final class MovementModules {
             wasFlying = false;
         }
 
-        if (NexusClient.enabled("NoFall") && player.getDeltaMovement().y < 0.0D && mc.getConnection() != null) {
-            mc.getConnection().send(new ServerboundMovePlayerPacket.StatusOnly(true));
+        if (NexusClient.enabled("NoFall") && player.getDeltaMovement().y < 0.0D) {
             player.fallDistance = 0.0F;
         }
 
