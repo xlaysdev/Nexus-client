@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import com.xlays.nexus.movement.MovementModules;
 import com.xlays.nexus.visual.VisualModules;
+import com.xlays.nexus.visual.OreESP;
 
 import java.util.List;
 
@@ -126,7 +127,23 @@ public final class ClickGuiScreen extends Screen {
             addRenderableWidget(Button.builder(Component.literal("CHESTS  •  " + (VisualModules.scanChests ? "ON" : "OFF")),
                 b -> { VisualModules.scanChests = !VisualModules.scanChests; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
                 .bounds(contentX, top + 271, half, 25).build());
-            int rowY = top + 301;
+            addRenderableWidget(Button.builder(Component.literal("ORE RADIUS  −  " + OreESP.getRadius()),
+                b -> { OreESP.setRadius(OreESP.getRadius() - 2); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 301, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("ORE RADIUS  +"),
+                b -> { OreESP.setRadius(OreESP.getRadius() + 2); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 301, half, 25).build());
+            int oreIndex = 0;
+            for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
+                int col = oreIndex % 3;
+                int row = oreIndex / 3;
+                int cellW = (contentW - 12) / 3;
+                addRenderableWidget(Button.builder(Component.literal(group.label + "  " + (OreESP.isEnabled(group) ? "ON" : "OFF")),
+                    b -> { OreESP.setEnabled(group, !OreESP.isEnabled(group)); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                    .bounds(contentX + col * (cellW + 6), top + 331 + row * 28, cellW, 24).build());
+                oreIndex++;
+            }
+            int rowY = top + 421;
             for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
                 if (!feature.category.equals(selected)) continue;
                 if (rowY > top + panelHeight - 58) break;
