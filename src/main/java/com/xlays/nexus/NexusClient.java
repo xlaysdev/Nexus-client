@@ -20,7 +20,13 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
-import com.xlays.nexus.modules.combat.CombatModules;
+import com.xlays.nexus.modules.combat.KillAura;
+import com.xlays.nexus.modules.combat.AutoTotem;
+import com.xlays.nexus.modules.combat.OffhandManager;
+import com.xlays.nexus.modules.combat.AutoArmor;
+import com.xlays.nexus.modules.combat.CrystalAura;
+import com.xlays.nexus.modules.combat.AutoClicker;
+import com.xlays.nexus.modules.combat.TriggerBot;
 import com.xlays.nexus.modules.movement.MovementModules;
 import com.xlays.nexus.modules.render.VisualModules;
 import com.xlays.nexus.modules.render.OreESP;
@@ -70,9 +76,9 @@ public final class NexusClient {
         add("Attack Cooldown", "Combat", false);
         add("Totem Counter", "Combat", false);
         add("Potion Effects", "Combat", false);
-        add("AutoClicker", "Combat", false);
-        add("TriggerBot", "Combat", false);
-        add("KillAura", "Combat", false);
+        MODULES.register(new AutoClicker());
+        MODULES.register(new TriggerBot());
+        MODULES.register(new KillAura());
         add("Target Armor", "Combat", false);
         add("Target Held Item", "Combat", false);
         add("Target Effects", "Combat", false);
@@ -82,10 +88,10 @@ public final class NexusClient {
         add("Critical Hit Indicator", "Combat", false);
         add("Nearby Players", "Combat", false);
         add("Enemy Health Bar", "Combat", false);
-        add("AutoTotem", "Combat", false);
-        add("CrystalAura", "Combat", false);
-        add("AutoArmor", "Combat", false);
-        add("OffhandManager", "Combat", false);
+        MODULES.register(new AutoTotem());
+        MODULES.register(new CrystalAura());
+        MODULES.register(new AutoArmor());
+        MODULES.register(new OffhandManager());
         add("Reach", "Combat", false);
         add("Watermark", "HUD", true);
         add("ArmorHUD", "HUD", false);
@@ -136,27 +142,7 @@ public final class NexusClient {
         } else {
             leftWasDown = false;
         }
-        if (mc.player != null && mc.level != null && mc.gameMode != null && mc.screen == null) {
-            long now = System.currentTimeMillis();
-            LivingEntity crosshairTarget = mc.hitResult instanceof EntityHitResult hit
-                && hit.getEntity() instanceof LivingEntity living && living.isAlive() ? living : null;
-
-            // Manual-hold click repeater: only repeats while the player physically holds left mouse.
-            if (enabled("AutoClicker") && leftWasDown && crosshairTarget != null
-                && now - lastAutoClickAt >= 125L && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
-                performAttack(mc, crosshairTarget);
-                lastAutoClickAt = now;
-            }
-
-            // TriggerBot attacks only the living entity already under the crosshair.
-            if (enabled("TriggerBot") && crosshairTarget != null
-                && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
-                performAttack(mc, crosshairTarget);
-            }
-
-            CombatModules.tick(mc);
-        }
-        if (mc.player != null && mc.level != null) MovementModules.tick(mc);
+        MODULES.tick();
         VisualModules.tick(mc);
         OreESP.tick();
 
