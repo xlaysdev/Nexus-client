@@ -35,6 +35,7 @@ public final class VisualModules {
     public static boolean scanChests = true;
     public static boolean scanCrystals = true;
     private static double oldGamma = Double.NaN;
+    private static double oldDamageTilt = Double.NaN;
     private static final Set<net.minecraft.world.level.block.Block> SEARCH_BLOCKS = Set.of(
         Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE, Blocks.ANCIENT_DEBRIS,
         Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.ENDER_CHEST
@@ -52,8 +53,13 @@ public final class VisualModules {
             mc.options.gamma().set(oldGamma);
             oldGamma = Double.NaN;
         }
-        // NoHurtCam is implemented through the vanilla accessibility option.
-        if (NexusClient.enabled("NoHurtCam")) mc.options.damageTiltStrength().set(0.0D);
+        if (NexusClient.enabled("NoHurtCam")) {
+            if (Double.isNaN(oldDamageTilt)) oldDamageTilt = mc.options.damageTiltStrength().get();
+            mc.options.damageTiltStrength().set(0.0D);
+        } else if (!Double.isNaN(oldDamageTilt)) {
+            mc.options.damageTiltStrength().set(oldDamageTilt);
+            oldDamageTilt = Double.NaN;
+        }
     }
 
     public static void onWorldRender(RenderLevelStageEvent event) {
@@ -82,7 +88,12 @@ public final class VisualModules {
                 if (target == mc.player || !target.isAlive()) continue;
                 int color = isFriend(target) ? friendColor : enemyColor;
                 AABB box = target.getBoundingBox().inflate(0.035D);
-                ShapeRenderer.renderShape(pose, consumer, Shapes.create(box), 0, 0, 0, color, 2.0F);
+                if (esp3d) ShapeRenderer.renderShape(pose, consumer, Shapes.create(box), 0, 0, 0, color, 2.0F);
+                if (showTracers) {
+                    var matrix = pose.last().pose();
+                    consumer.addVertex(matrix, 0.0F, 0.0F, 0.0F).setColor(color);
+                    consumer.addVertex(matrix, (float) target.getX(), (float) (target.getY() + target.getBbHeight()), (float) target.getZ()).setColor(color);
+                }
             }
         }
 
@@ -104,6 +115,21 @@ public final class VisualModules {
         }
         buffers.endBatch(lineType);
         pose.popPose();
+    }
+
+    public static void renderOverlay(net.minecraft.client.gui.GuiGraphics graphics) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!NexusClient.enabled("ESP") || !showNametags || mc.player == null || mc.level == null) return;
+        for (Player target : mc.level.players()) {
+            if (target == mc.player || !target.isAlive()) continue;
+            Vec3 point = target.position().add(0.0D, target.getBbHeight() + 0.35D, 0.0D);
+            Vec3 screen = mc.gameRenderer.projectPointToScreen(point);
+            if (screen.z < 0.0D) continue;
+            int color = isFriend(target) ? friendColor : enemyColor;
+            String label = target.getName().getString() + "  " + Math.round(target.getHealth()) + "HP  "
+                + String.format("%.1fm", mc.player.distanceTo(target));
+            graphics.drawCenteredString(mc.font, label, (int) screen.x, (int) screen.y, color);
+        }
     }
 
     private static RenderType getLineType() {
