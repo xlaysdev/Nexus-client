@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import com.xlays.nexus.movement.MovementModules;
+import com.xlays.nexus.visual.VisualModules;
 
 import java.util.List;
 
@@ -25,8 +26,8 @@ public final class ClickGuiScreen extends Screen {
 
     @Override
     protected void init() {
-        panelWidth = Math.max(300, Math.min(760, width - 20));
-        panelHeight = Math.max(260, Math.min(620, height - 20));
+        panelWidth = Math.min(760, Math.max(240, width - 16));
+        panelHeight = Math.min(620, Math.max(220, height - 16));
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
         sidebarWidth = Math.max(92, Math.min(145, panelWidth / 4));
@@ -87,6 +88,42 @@ public final class ClickGuiScreen extends Screen {
             addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  +"),
                 b -> { MovementModules.velocityScale = Math.min(1.0F, MovementModules.velocityScale + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX + half + 6, top + 181, half, 25).build());
+        } else if (selected.equals("Render")) {
+            int half = contentW / 2 - 3;
+            addRenderableWidget(Button.builder(Component.literal("ESP BOX  •  " + (VisualModules.esp3d ? "3D" : "2D")),
+                b -> { VisualModules.esp3d = !VisualModules.esp3d; Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 91, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("ENEMY COLOR  •  " + String.format("#%06X", VisualModules.enemyColor & 0xFFFFFF)),
+                b -> { VisualModules.enemyColor = cycleColor(VisualModules.enemyColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 91, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("FRIEND COLOR  •  " + String.format("#%06X", VisualModules.friendColor & 0xFFFFFF)),
+                b -> { VisualModules.friendColor = cycleColor(VisualModules.friendColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 121, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("BLOCK COLOR  •  " + String.format("#%06X", VisualModules.blockColor & 0xFFFFFF)),
+                b -> { VisualModules.blockColor = cycleColor(VisualModules.blockColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 121, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("NAMETAGS  •  " + (VisualModules.showNametags ? "ON" : "OFF")),
+                b -> { VisualModules.showNametags = !VisualModules.showNametags; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 151, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("TRACERS  •  " + (VisualModules.showTracers ? "ON" : "OFF")),
+                b -> { VisualModules.showTracers = !VisualModules.showTracers; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 151, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  −  " + VisualModules.crosshairSize),
+                b -> { VisualModules.crosshairSize = Math.max(2, VisualModules.crosshairSize - 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX, top + 181, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  +"),
+                b -> { VisualModules.crosshairSize = Math.min(14, VisualModules.crosshairSize + 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
+                .bounds(contentX + half + 6, top + 181, half, 25).build());
+            int rowY = top + 215;
+            for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
+                if (!feature.category.equals(selected)) continue;
+                if (rowY > top + panelHeight - 58) break;
+                addRenderableWidget(Button.builder(Component.literal(feature.name + "     [" + (feature.enabled ? "ON" : "OFF") + "]"), b -> {
+                    NexusClient.toggle(feature);
+                    Minecraft.getInstance().setScreen(new ClickGuiScreen(selected));
+                }).bounds(contentX, rowY, contentW, 22).build());
+                rowY += 25;
+            }
         } else if (selected.equals("Profiles")) {
             profileName = new EditBox(font, contentX, top + 91, contentW, 22, Component.literal("Profile name"));
             profileName.setMaxLength(24);
@@ -140,6 +177,12 @@ public final class ClickGuiScreen extends Screen {
         }
         if (profiles.isEmpty()) notice = "No saved profiles yet. Save one above.";
         else notice = "Saved profiles: " + String.join(", ", profiles.subList(0, Math.min(4, profiles.size())));
+    }
+
+    private static int cycleColor(int color) {
+        int[] colors = {0xFFFF4545, 0xFFFFB347, 0xFF45E68A, 0xFF45B8FF, 0xFFB58CFF, 0xFFFF6BCE, 0xFFFFFFFF};
+        for (int i = 0; i < colors.length; i++) if (colors[i] == color) return colors[(i + 1) % colors.length];
+        return colors[0];
     }
 
     private static String accentName() {
