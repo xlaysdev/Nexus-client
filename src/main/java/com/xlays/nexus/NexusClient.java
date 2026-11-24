@@ -399,7 +399,7 @@ public final class NexusClient {
             int screenWidth = mc.getWindow().getGuiScaledWidth();
             int ry = 8;
             int index = 0;
-            for (Feature f : FEATURES.values()) if (f.enabled) {
+            for (Module f : MODULES.all()) if (f.enabled) {
                 String label = f.name.toUpperCase();
                 int w = mc.font.width(label);
                 int rx = screenWidth - 8;
