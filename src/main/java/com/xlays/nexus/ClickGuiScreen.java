@@ -77,7 +77,7 @@ public final class ClickGuiScreen extends Screen {
         List<Module> modules=visibleModules();
         int rows=(modules.size()+1)/2;
         int maxScroll=Math.max(0,rows*50-214);scroll=Math.max(0,Math.min(scroll,maxScroll));
-        g.enableScissor((int)(ox+x0*scale),(int)(oy+112*scale),(int)(ox+380*scale),(int)(oy+H-FOOTER-5)*1);
+        g.enableScissor((int)(ox+x0*scale),(int)(oy+112*scale),(int)(ox+382*scale),(int)(oy+(H-FOOTER-5)*scale));
         for(int i=0;i<modules.size();i++){
             Module m=modules.get(i);int x=x0+(i%2)*126,y=116+(i/2)*50-scroll;
             if(y<-45||y>H-FOOTER-4)continue;
