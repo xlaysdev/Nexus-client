@@ -112,7 +112,7 @@ public final class NexusConfig {
         try (InputStream in = Files.newInputStream(path)) {
             p.load(in);
             NexusClient.MODULES.all().forEach(f ->
-                f.enabled = Boolean.parseBoolean(p.getProperty("module." + f.name, Boolean.toString(f.enabled))));
+                f.setEnabled(Boolean.parseBoolean(p.getProperty("module." + f.name, Boolean.toString(f.enabled))));
             NexusClient.hudX = clamp(parse(p, "hud.x", NexusClient.hudX), 0, 10000);
             NexusClient.hudY = clamp(parse(p, "hud.y", NexusClient.hudY), 0, 10000);
             NexusClient.hudScale = clamp(parse(p, "hud.scale", NexusClient.hudScale), 75, 150);
