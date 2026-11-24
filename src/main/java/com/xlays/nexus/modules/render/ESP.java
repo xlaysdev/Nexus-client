@@ -13,7 +13,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 public final class ESP extends Module {
  public ESP(){super("ESP",Category.RENDER,false);}
- public static void onWorldRender(RenderLevelStageEvent event){
+ public static void onWorldRender(RenderLevelStageEvent.AfterEntities event){
   if(!(event instanceof RenderLevelStageEvent.AfterEntities)||!NexusClient.enabled("ESP"))return;
   Minecraft mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.options.hideGui)return;
   PoseStack pose=event.getPoseStack();if(pose==null)return;
