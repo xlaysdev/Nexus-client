@@ -146,7 +146,7 @@ public final class ClickGuiScreen extends Screen {
             }
             int rowY = top + 421;
             for (Module feature : NexusClient.MODULES.all()) {
-                if (!feature.category.equals(selected)) continue;
+                if (!feature.categoryName().equalsIgnoreCase(selected)) continue;
                 if (rowY > top + panelHeight - 58) break;
                 addRenderableWidget(Button.builder(Component.literal(feature.name + "     [" + (feature.enabled ? "ON" : "OFF") + "]"), b -> {
                     NexusClient.toggle(feature);
