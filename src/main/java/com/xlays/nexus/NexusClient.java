@@ -5,6 +5,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -104,7 +105,7 @@ public final class NexusClient {
         }
         if (enabled("Armor Status")) {
             int pieces = 0;
-            for (var stack : mc.player.getInventory().armor) if (!stack.isEmpty()) pieces++;
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})\n                if (!mc.player.getItemBySlot(slot).isEmpty()) pieces++;
             text(g, "ARMOR  " + pieces + "/4 equipped", x, y); y += line;
         }
         if (enabled("Player Status")) {
