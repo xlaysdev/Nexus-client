@@ -85,7 +85,6 @@ public final class NexusConfig {
         p.setProperty("visual.scanDiamond", Boolean.toString(VisualModules.scanDiamond));
         p.setProperty("visual.scanDebris", Boolean.toString(VisualModules.scanDebris));
         p.setProperty("visual.scanChests", Boolean.toString(VisualModules.scanChests));
-        p.setProperty("visual.scanCrystals", Boolean.toString(VisualModules.scanCrystals));
         return p;
     }
 
@@ -125,7 +124,6 @@ public final class NexusConfig {
             VisualModules.scanDiamond = Boolean.parseBoolean(p.getProperty("visual.scanDiamond", Boolean.toString(VisualModules.scanDiamond)));
             VisualModules.scanDebris = Boolean.parseBoolean(p.getProperty("visual.scanDebris", Boolean.toString(VisualModules.scanDebris)));
             VisualModules.scanChests = Boolean.parseBoolean(p.getProperty("visual.scanChests", Boolean.toString(VisualModules.scanChests)));
-            VisualModules.scanCrystals = Boolean.parseBoolean(p.getProperty("visual.scanCrystals", Boolean.toString(VisualModules.scanCrystals)));
         } catch (IOException e) {
             System.err.println("[NEXUS] Could not load config: " + e.getMessage());
         }
