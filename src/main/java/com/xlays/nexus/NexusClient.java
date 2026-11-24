@@ -27,6 +27,7 @@ import com.xlays.nexus.modules.combat.AutoArmor;
 import com.xlays.nexus.modules.combat.CrystalAura;
 import com.xlays.nexus.modules.combat.AutoClicker;
 import com.xlays.nexus.modules.combat.TriggerBot;
+import com.xlays.nexus.modules.combat.Reach;
 import com.xlays.nexus.modules.movement.MovementSettings;
 import com.xlays.nexus.modules.movement.Velocity;
 import com.xlays.nexus.modules.movement.Speed;
@@ -104,7 +105,7 @@ public final class NexusClient {
         MODULES.register(new CrystalAura());
         MODULES.register(new AutoArmor());
         MODULES.register(new OffhandManager());
-        add("Reach", "Combat", false);
+        MODULES.register(new Reach());
         add("Watermark", "HUD", true);
         add("ArmorHUD", "HUD", false);
         add("Keystrokes", "HUD", false);
