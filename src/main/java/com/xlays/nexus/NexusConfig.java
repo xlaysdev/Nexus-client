@@ -1,6 +1,6 @@
 package com.xlays.nexus;
 
-import com.xlays.nexus.modules.render.VisualModules;
+import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.OreESP;
 
 import net.neoforged.fml.loading.FMLPaths;
@@ -75,17 +75,17 @@ public final class NexusConfig {
         p.setProperty("hud.scale", Integer.toString(NexusClient.hudScale));
         p.setProperty("theme.accent", Integer.toString(NexusClient.accentIndex));
         p.setProperty("hud.showBackground", Boolean.toString(NexusClient.hudBackground));
-        p.setProperty("visual.enemyColor", Integer.toString(VisualModules.enemyColor));
-        p.setProperty("visual.friendColor", Integer.toString(VisualModules.friendColor));
-        p.setProperty("visual.blockColor", Integer.toString(VisualModules.blockColor));
-        p.setProperty("visual.crosshairColor", Integer.toString(VisualModules.crosshairColor));
-        p.setProperty("visual.crosshairSize", Integer.toString(VisualModules.crosshairSize));
-        p.setProperty("visual.esp3d", Boolean.toString(VisualModules.esp3d));
-        p.setProperty("visual.nametags", Boolean.toString(VisualModules.showNametags));
-        p.setProperty("visual.tracers", Boolean.toString(VisualModules.showTracers));
-        p.setProperty("visual.scanDiamond", Boolean.toString(VisualModules.scanDiamond));
-        p.setProperty("visual.scanDebris", Boolean.toString(VisualModules.scanDebris));
-        p.setProperty("visual.scanChests", Boolean.toString(VisualModules.scanChests));
+        p.setProperty("visual.enemyColor", Integer.toString(VisualSettings.enemyColor));
+        p.setProperty("visual.friendColor", Integer.toString(VisualSettings.friendColor));
+        p.setProperty("visual.blockColor", Integer.toString(VisualSettings.blockColor));
+        p.setProperty("visual.crosshairColor", Integer.toString(VisualSettings.crosshairColor));
+        p.setProperty("visual.crosshairSize", Integer.toString(VisualSettings.crosshairSize));
+        p.setProperty("visual.esp3d", Boolean.toString(VisualSettings.esp3d));
+        p.setProperty("visual.nametags", Boolean.toString(VisualSettings.showNametags));
+        p.setProperty("visual.tracers", Boolean.toString(VisualSettings.showTracers));
+        p.setProperty("visual.scanDiamond", Boolean.toString(VisualSettings.scanDiamond));
+        p.setProperty("visual.scanDebris", Boolean.toString(VisualSettings.scanDebris));
+        p.setProperty("visual.scanChests", Boolean.toString(VisualSettings.scanChests));
         p.setProperty("ore.radius", Integer.toString(OreESP.getRadius()));
         for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
             p.setProperty("ore." + group.name(), Boolean.toString(OreESP.isEnabled(group)));
@@ -118,17 +118,17 @@ public final class NexusConfig {
             NexusClient.hudScale = clamp(parse(p, "hud.scale", NexusClient.hudScale), 75, 150);
             NexusClient.accentIndex = clamp(parse(p, "theme.accent", NexusClient.accentIndex), 0, NexusClient.ACCENTS.length - 1);
             NexusClient.hudBackground = Boolean.parseBoolean(p.getProperty("hud.showBackground", Boolean.toString(NexusClient.hudBackground)));
-            VisualModules.enemyColor = parse(p, "visual.enemyColor", VisualModules.enemyColor);
-            VisualModules.friendColor = parse(p, "visual.friendColor", VisualModules.friendColor);
-            VisualModules.blockColor = parse(p, "visual.blockColor", VisualModules.blockColor);
-            VisualModules.crosshairColor = parse(p, "visual.crosshairColor", VisualModules.crosshairColor);
-            VisualModules.crosshairSize = clamp(parse(p, "visual.crosshairSize", VisualModules.crosshairSize), 2, 14);
-            VisualModules.esp3d = Boolean.parseBoolean(p.getProperty("visual.esp3d", Boolean.toString(VisualModules.esp3d)));
-            VisualModules.showNametags = Boolean.parseBoolean(p.getProperty("visual.nametags", Boolean.toString(VisualModules.showNametags)));
-            VisualModules.showTracers = Boolean.parseBoolean(p.getProperty("visual.tracers", Boolean.toString(VisualModules.showTracers)));
-            VisualModules.scanDiamond = Boolean.parseBoolean(p.getProperty("visual.scanDiamond", Boolean.toString(VisualModules.scanDiamond)));
-            VisualModules.scanDebris = Boolean.parseBoolean(p.getProperty("visual.scanDebris", Boolean.toString(VisualModules.scanDebris)));
-            VisualModules.scanChests = Boolean.parseBoolean(p.getProperty("visual.scanChests", Boolean.toString(VisualModules.scanChests)));
+            VisualSettings.enemyColor = parse(p, "visual.enemyColor", VisualSettings.enemyColor);
+            VisualSettings.friendColor = parse(p, "visual.friendColor", VisualSettings.friendColor);
+            VisualSettings.blockColor = parse(p, "visual.blockColor", VisualSettings.blockColor);
+            VisualSettings.crosshairColor = parse(p, "visual.crosshairColor", VisualSettings.crosshairColor);
+            VisualSettings.crosshairSize = clamp(parse(p, "visual.crosshairSize", VisualSettings.crosshairSize), 2, 14);
+            VisualSettings.esp3d = Boolean.parseBoolean(p.getProperty("visual.esp3d", Boolean.toString(VisualSettings.esp3d)));
+            VisualSettings.showNametags = Boolean.parseBoolean(p.getProperty("visual.nametags", Boolean.toString(VisualSettings.showNametags)));
+            VisualSettings.showTracers = Boolean.parseBoolean(p.getProperty("visual.tracers", Boolean.toString(VisualSettings.showTracers)));
+            VisualSettings.scanDiamond = Boolean.parseBoolean(p.getProperty("visual.scanDiamond", Boolean.toString(VisualSettings.scanDiamond)));
+            VisualSettings.scanDebris = Boolean.parseBoolean(p.getProperty("visual.scanDebris", Boolean.toString(VisualSettings.scanDebris)));
+            VisualSettings.scanChests = Boolean.parseBoolean(p.getProperty("visual.scanChests", Boolean.toString(VisualSettings.scanChests)));
             OreESP.setRadius(clamp(parse(p, "ore.radius", OreESP.getRadius()), 4, 32));
             for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
                 OreESP.setEnabled(group, Boolean.parseBoolean(p.getProperty("ore." + group.name(), Boolean.toString(OreESP.isEnabled(group)))));
