@@ -119,16 +119,46 @@ public final class VisualModules {
 
     public static void renderOverlay(net.minecraft.client.gui.GuiGraphics graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (!NexusClient.enabled("ESP") || !showNametags || mc.player == null || mc.level == null) return;
+        if (!NexusClient.enabled("ESP") || mc.player == null || mc.level == null) return;
+        int screenW = mc.getWindow().getGuiScaledWidth();
+        int screenH = mc.getWindow().getGuiScaledHeight();
         for (Player target : mc.level.players()) {
             if (target == mc.player || !target.isAlive()) continue;
-            Vec3 point = target.position().add(0.0D, target.getBbHeight() + 0.35D, 0.0D);
-            Vec3 screen = mc.gameRenderer.projectPointToScreen(point);
-            if (screen.z < 0.0D) continue;
             int color = isFriend(target) ? friendColor : enemyColor;
-            String label = target.getName().getString() + "  " + Math.round(target.getHealth()) + "HP  "
-                + String.format("%.1fm", mc.player.distanceTo(target));
-            graphics.drawCenteredString(mc.font, label, (int) screen.x, (int) screen.y, color);
+            Vec3 topPoint = target.position().add(0.0D, target.getBbHeight() + 0.25D, 0.0D);
+            Vec3 bottomPoint = target.position().add(0.0D, 0.05D, 0.0D);
+            Vec3 top = mc.gameRenderer.projectPointToScreen(topPoint);
+            Vec3 bottom = mc.gameRenderer.projectPointToScreen(bottomPoint);
+            if (top.z < 0.0D || bottom.z < 0.0D) continue;
+            if (!esp3d) {
+                int boxH = Math.max(4, (int) Math.abs(bottom.y - top.y));
+                int boxW = Math.max(3, boxH / 3);
+                int cx = (int) ((top.x + bottom.x) * 0.5D);
+                int x1 = cx - boxW / 2, x2 = cx + boxW / 2;
+                int y1 = (int) Math.min(top.y, bottom.y), y2 = y1 + boxH;
+                graphics.fill(x1, y1, x2, y1 + 1, color);
+                graphics.fill(x1, y2 - 1, x2, y2, color);
+                graphics.fill(x1, y1, x1 + 1, y2, color);
+                graphics.fill(x2 - 1, y1, x2, y2, color);
+            }
+            if (showTracers && !esp3d) {
+                int x1 = screenW / 2, y1 = screenH - 2;
+                int x2 = (int) bottom.x, y2 = (int) bottom.y;
+                int dx = x2 - x1, dy = y2 - y1;
+                int steps = Math.max(Math.abs(dx), Math.abs(dy));
+                if (steps > 0 && steps < 2000) {
+                    for (int i = 0; i <= steps; i++) {
+                        int px = x1 + dx * i / steps;
+                        int py = y1 + dy * i / steps;
+                        graphics.fill(px, py, px + 1, py + 1, color);
+                    }
+                }
+            }
+            if (showNametags) {
+                String label = target.getName().getString() + "  " + Math.round(target.getHealth()) + "HP  "
+                    + String.format("%.1fm", mc.player.distanceTo(target));
+                graphics.drawCenteredString(mc.font, label, (int) top.x, (int) top.y - 10, color);
+            }
         }
     }
 
