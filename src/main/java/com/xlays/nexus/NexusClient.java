@@ -7,6 +7,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -54,6 +56,10 @@ public final class NexusClient {
     private static void registerFeatures() {
         add("CPS Display", "Combat", false);
         add("Target Info", "Combat", false);
+        add("Target Health", "Combat", false);
+        add("Attack Cooldown", "Combat", false);
+        add("Totem Counter", "Combat", false);
+        add("Potion Effects", "Combat", false);
         add("Watermark", "HUD", true);
         add("FPS", "HUD", true);
         add("Coordinates", "HUD", true);
@@ -138,12 +144,49 @@ public final class NexusClient {
             y += line;
         }
         if (enabled("CPS Display")) { text(g, "CPS  " + LEFT_CLICKS.size(), x, y); y += line; }
-        if (enabled("Target Info") && mc.hitResult instanceof EntityHitResult hit) {
+        if (mc.hitResult instanceof EntityHitResult hit) {
             Entity target = hit.getEntity();
-            text(g, "TARGET  " + target.getName().getString(), x, y);
+            if (enabled("Target Info")) {
+                text(g, "TARGET  " + target.getName().getString(), x, y);
+                y += line;
+                text(g, String.format("DISTANCE  %.1f m", mc.player.distanceTo(target)), x, y);
+                y += line;
+            }
+            if (enabled("Target Health") && target instanceof LivingEntity living) {
+                float health = Math.max(0.0F, living.getHealth());
+                float maxHealth = Math.max(1.0F, living.getMaxHealth());
+                text(g, String.format("TARGET HP  %.1f / %.1f", health, maxHealth), x, y);
+                y += line;
+                int barWidth = 120;
+                g.fill(x, y, x + barWidth, y + 5, 0xFF263A46);
+                g.fill(x, y, x + Math.round(barWidth * Math.min(1.0F, health / maxHealth)), y + 5, accent());
+                y += 9;
+            }
+        }
+        if (enabled("Attack Cooldown")) {
+            int cooldown = Math.round(mc.player.getAttackStrengthScale(0.0F) * 100.0F);
+            text(g, "ATTACK READY  " + cooldown + "%", x, y);
             y += line;
-            text(g, String.format("DISTANCE  %.1f m", mc.player.distanceTo(target)), x, y);
+            g.fill(x, y, x + 100, y + 4, 0xFF263A46);
+            g.fill(x, y, x + cooldown, y + 4, accent());
+            y += 8;
+        }
+        if (enabled("Totem Counter")) {
+            text(g, "TOTEMS  " + mc.player.getInventory().countItem(Items.TOTEM_OF_UNDYING), x, y);
             y += line;
+        }
+        if (enabled("Potion Effects")) {
+            var effects = mc.player.getActiveEffects();
+            text(g, "EFFECTS  " + effects.size(), x, y);
+            y += line;
+            int shown = 0;
+            for (var effect : effects) {
+                if (shown++ >= 3) break;
+                String name = effect.getEffect().value().getDisplayName().getString();
+                int seconds = Math.max(0, effect.getDuration() / 20);
+                text(g, name + "  " + seconds + "s", x, y);
+                y += line;
+            }
         }
         if (enabled("Armor Status") || enabled("Armor Durability")) {
             int pieces = 0;
