@@ -87,7 +87,6 @@ public final class NexusClient {
         add("AutoArmor", "Combat", false);
         add("OffhandManager", "Combat", false);
         add("Reach", "Combat", false);
-        add("Rotations", "Combat", true);
         add("Watermark", "HUD", true);
         add("ArmorHUD", "HUD", false);
         add("Keystrokes", "HUD", false);
