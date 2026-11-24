@@ -1,7 +1,7 @@
 package com.xlays.nexus;
 
-import com.xlays.nexus.visual.VisualModules;
-import com.xlays.nexus.visual.OreESP;
+import com.xlays.nexus.modules.render.VisualModules;
+import com.xlays.nexus.modules.render.OreESP;
 
 import net.neoforged.fml.loading.FMLPaths;
 
