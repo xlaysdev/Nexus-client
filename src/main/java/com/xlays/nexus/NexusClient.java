@@ -21,6 +21,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 import com.xlays.nexus.combat.CombatModules;
+import com.xlays.nexus.movement.MovementModules;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -54,6 +55,7 @@ public final class NexusClient {
         modBus.addListener(this::registerKeys);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderHud);
+        NeoForge.EVENT_BUS.addListener(MovementModules::onKnockback);
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) { event.register(OPEN_GUI); }
@@ -91,6 +93,15 @@ public final class NexusClient {
         add("Speedometer", "Movement", false);
         add("Sprint Status", "Movement", true);
         add("Movement State", "Movement", false);
+        add("Speed", "Movement", false);
+        add("Fly", "Movement", false);
+        add("NoFall", "Movement", false);
+        add("Sprint", "Movement", false);
+        add("Step", "Movement", false);
+        add("Velocity", "Movement", false);
+        add("Safewalk", "Movement", false);
+        add("InventoryMove", "Movement", false);
+        add("FastPlace", "Movement", false);
         add("Armor Status", "Player", true);
         add("Armor Durability", "Player", false);
         add("Player Status", "Player", false);
@@ -136,6 +147,7 @@ public final class NexusClient {
 
             CombatModules.tick(mc);
         }
+        if (mc.player != null && mc.level != null) MovementModules.tick(mc);
 
         long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
