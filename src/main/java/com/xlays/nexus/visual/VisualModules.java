@@ -65,6 +65,7 @@ public final class VisualModules {
         if (!(event instanceof RenderLevelStageEvent.AfterEntities)) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.options.hideGui) return;
+        OreESP.render();
         boolean esp = NexusClient.enabled("ESP");
         boolean blockEsp = NexusClient.enabled("BlockESP");
         if (!esp && !blockEsp) return;
