@@ -1,6 +1,7 @@
 package com.xlays.nexus.modules.render;
 
 import com.xlays.nexus.NexusClient;
+import com.xlays.nexus.modules.render.OreESP;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
