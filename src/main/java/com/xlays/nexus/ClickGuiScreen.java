@@ -1,253 +1,206 @@
 package com.xlays.nexus;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import com.xlays.nexus.modules.Module;
 import com.xlays.nexus.modules.movement.MovementSettings;
 import com.xlays.nexus.modules.render.VisualSettings;
-import com.xlays.nexus.modules.render.OreESP;
-import com.xlays.nexus.modules.Module;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/** C00lgui-inspired responsive module browser for NEXUS. */
 public final class ClickGuiScreen extends Screen {
-    private static final List<String> CATEGORIES = List.of("Combat", "HUD", "Movement", "Player", "Render", "Misc", "Settings", "Profiles");
-    private final String selected;
-    private int left, top, panelWidth, panelHeight, sidebarWidth;
-    private EditBox profileName;
-    private String notice = "Right Shift  •  Toggle interface";
+    private static final int W=660,H=390,HEADER=38,FOOTER=22;
+    private static final int BG=0xF00D1017,PANEL=0xFF141923,CARD=0xFF191F2B,HOVER=0xFF252E3D,LINE=0xFF2A3444;
+    private static final int TEXT=0xFFF1F5FC,MUTED=0xFF8995A8,GREEN=0xFF55D6A0,ACCENT=0xFF9585FF,RED=0xFFFF7185;
+    private static final Module.Category[] CATEGORIES={Module.Category.COMBAT,Module.Category.MOVEMENT,Module.Category.PLAYER,Module.Category.RENDER,Module.Category.HUD,Module.Category.MISC};
+    private static final int[] CATEGORY_COLORS={0xFFFF7185,0xFF69A9FF,0xFFFFC86B,0xFFB58CFF,0xFF55D6A0,0xFF65C9D8};
+    private float scale=1,ox,oy;
+    private Module.Category category=Module.Category.COMBAT;
+    private String selected=null,search="";
+    private boolean searchFocused=false;
+    private int scroll=0;
 
-    public ClickGuiScreen() { this("HUD"); }
-    public ClickGuiScreen(String selected) {
-        super(Component.literal("NEXUS V1"));
-        this.selected = selected;
+    public ClickGuiScreen(){super(Component.literal("NEXUS V1"));}
+    public ClickGuiScreen(String ignored){this();}
+
+    @Override protected void init(){
+        super.init();
+        scale=Math.max(.1F,Math.min(1F,Math.min((width-16F)/W,(height-16F)/H)));
+        ox=(width-W*scale)/2; oy=(height-H*scale)/2;
     }
 
-    @Override
-    protected void init() {
-        panelWidth = Math.max(1, Math.min(760, width - 16));
-        panelHeight = Math.max(1, Math.min(620, height - 16));
-        left = (width - panelWidth) / 2;
-        top = (height - panelHeight) / 2;
-        sidebarWidth = Math.min(Math.max(1, panelWidth - 8), Math.max(50, Math.min(145, panelWidth / 4)));
-        int navY = top + 61;
-        int navW = Math.max(1, sidebarWidth - 18);
-        for (String category : CATEGORIES) {
-            final String target = category;
-            addRenderableWidget(Button.builder(Component.literal((selected.equals(category) ? "◆ " : "  ") + category),
-                b -> Minecraft.getInstance().setScreen(new ClickGuiScreen(target)))
-                .bounds(left + 9, navY, navW, 24).build());
-            navY += 27;
+    private List<Module> visibleModules(){
+        List<Module> out=new ArrayList<>();
+        for(Module m:NexusClient.MODULES.inCategory(category))
+            if(m.name.toLowerCase().contains(search.toLowerCase())) out.add(m);
+        return out;
+    }
+
+    @Override public void render(GuiGraphics g,int mx,int my,float partialTick){
+        int localX=(int)((mx-ox)/scale),localY=(int)((my-oy)/scale);
+        g.fill(0,0,width,height,0xB9000000);
+        g.pose().pushMatrix();g.pose().translate(ox,oy);g.pose().scale(scale,scale);
+        g.fill(0,0,W,H,BG);border(g,0,0,W,H,LINE);
+        g.fill(0,0,W,HEADER,0xFF171D29);g.fill(0,HEADER-2,W,HEADER,ACCENT);
+        g.fill(14,10,32,28,ACCENT);g.drawString(font,"N",20,15,0xFFFFFFFF,false);
+        g.drawString(font,"NEXUS",40,10,TEXT,false);g.drawString(font,"CLIENT  /  MODULES",104,12,MUTED,false);
+        g.drawString(font,"NEOFORGE 1.21.11",W-128,13,MUTED,false);
+        int close=W-28;g.fill(close,9,close+17,27,hit(localX,localY,close,9,17,18)?0xFF633743:0xFF332630);
+        g.drawString(font,"X",close+6,14,RED,false);
+
+        g.fill(0,HEADER,118,H-FOOTER,PANEL);g.drawString(font,"CATEGORIES",14,52,MUTED,false);
+        for(int i=0;i<CATEGORIES.length;i++){
+            Module.Category c=CATEGORIES[i];int y=66+i*37;boolean active=category==c;
+            g.fill(9,y,109,y+30,active?0xFF252E40:hit(localX,localY,9,y,100,30)?HOVER:PANEL);
+            if(active)g.fill(9,y,12,y+30,CATEGORY_COLORS[i]);
+            String initial=c.name().substring(0,1);
+            g.drawString(font,initial,19,y+9,CATEGORY_COLORS[i],false);
+            String label=pretty(c.name());g.drawString(font,label,34,y+9,active?TEXT:MUTED,false);
+            String count=""+NexusClient.MODULES.inCategory(c).size();
+            g.drawString(font,count,99-font.width(count),y+9,MUTED,false);
         }
+        g.drawString(font,"STATUS",14,H-67,MUTED,false);g.fill(10,H-54,108,H-27,0xFF1C2930);
+        g.fill(17,H-44,22,H-39,GREEN);g.drawString(font,"READY",29,H-45,GREEN,false);
 
-        int contentX = left + sidebarWidth + 18;
-        int contentW = Math.max(1, panelWidth - sidebarWidth - 34);
-        if (selected.equals("Settings")) {
-            addRenderableWidget(Button.builder(Component.literal("ACCENT COLOR  •  " + accentName()),
-                b -> { NexusClient.accentIndex = (NexusClient.accentIndex + 1) % NexusClient.ACCENTS.length; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Settings")); })
-                .bounds(contentX, top + 91, contentW, 27).build());
-            addRenderableWidget(Button.builder(Component.literal("HUD SCALE  −  " + NexusClient.hudScale + "%"),
-                b -> { NexusClient.hudScale = Math.max(75, NexusClient.hudScale - 5); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Settings")); })
-                .bounds(contentX, top + 124, contentW / 2 - 3, 27).build());
-            addRenderableWidget(Button.builder(Component.literal("HUD SCALE  +"),
-                b -> { NexusClient.hudScale = Math.min(150, NexusClient.hudScale + 5); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Settings")); })
-                .bounds(contentX + contentW / 2 + 3, top + 124, contentW / 2 - 3, 27).build());
-            addRenderableWidget(Button.builder(Component.literal("HUD BACKGROUND  •  " + (NexusClient.hudBackground ? "ON" : "OFF")),
-                b -> { NexusClient.hudBackground = !NexusClient.hudBackground; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Settings")); })
-                .bounds(contentX, top + 157, contentW, 27).build());
-            addRenderableWidget(Button.builder(Component.literal("OPEN HUD EDITOR"),
-                b -> Minecraft.getInstance().setScreen(new HudEditorScreen()))
-                .bounds(contentX, top + 190, contentW, 27).build());
-            addRenderableWidget(Button.builder(Component.literal("RESET HUD POSITION"),
-                b -> { NexusClient.hudX = 12; NexusClient.hudY = 12; NexusClient.saveConfig(); notice = "HUD position reset."; })
-                .bounds(contentX, top + 223, contentW, 27).build());
-            addRenderableWidget(Button.builder(Component.literal("SAVE SETTINGS"),
-                b -> { NexusClient.saveConfig(); notice = "Settings saved."; })
-                .bounds(contentX, top + 256, contentW, 27).build());
-        } else if (selected.equals("Movement")) {
-            int half = Math.max(1, contentW / 2 - 3);
-            addRenderableWidget(Button.builder(Component.literal("SPEED  -  " + String.format("%.2fx", MovementSettings.speedMultiplier)),
-                b -> { MovementSettings.speedMultiplier = Math.max(1.0F, MovementSettings.speedMultiplier - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("SPEED  +"),
-                b -> { MovementSettings.speedMultiplier = Math.min(3.0F, MovementSettings.speedMultiplier + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX + half + 6, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("SPEED MODE  -  " + MovementSettings.speedMode),
-                b -> { MovementSettings.speedMode = switch (MovementSettings.speedMode) { case "Normal" -> "Bhop"; case "Bhop" -> "Timer"; default -> "Normal"; }; Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX, top + 121, contentW, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  -  " + String.format("%.2f", MovementSettings.verticalSpeed)),
-                b -> { MovementSettings.verticalSpeed = Math.max(0.1F, MovementSettings.verticalSpeed - 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  +"),
-                b -> { MovementSettings.verticalSpeed = Math.min(1.5F, MovementSettings.verticalSpeed + 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX + half + 6, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  -  " + String.format("%.1fx", MovementSettings.velocityScale)),
-                b -> { MovementSettings.velocityScale = Math.max(0.0F, MovementSettings.velocityScale - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX, top + 181, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  +"),
-                b -> { MovementSettings.velocityScale = Math.min(1.0F, MovementSettings.velocityScale + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
-                .bounds(contentX + half + 6, top + 181, half, 25).build());
-        } else if (selected.equals("Render")) {
-            int half = contentW / 2 - 3;
-            addRenderableWidget(Button.builder(Component.literal("ESP BOX  •  " + (VisualSettings.esp3d ? "3D" : "2D")),
-                b -> { VisualSettings.esp3d = !VisualSettings.esp3d; Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("ENEMY COLOR  •  " + String.format("#%06X", VisualSettings.enemyColor & 0xFFFFFF)),
-                b -> { VisualSettings.enemyColor = cycleColor(VisualSettings.enemyColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("FRIEND COLOR  •  " + String.format("#%06X", VisualSettings.friendColor & 0xFFFFFF)),
-                b -> { VisualSettings.friendColor = cycleColor(VisualSettings.friendColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 121, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("BLOCK COLOR  •  " + String.format("#%06X", VisualSettings.blockColor & 0xFFFFFF)),
-                b -> { VisualSettings.blockColor = cycleColor(VisualSettings.blockColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 121, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("NAMETAGS  •  " + (VisualSettings.showNametags ? "ON" : "OFF")),
-                b -> { VisualSettings.showNametags = !VisualSettings.showNametags; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("TRACERS  •  " + (VisualSettings.showTracers ? "ON" : "OFF")),
-                b -> { VisualSettings.showTracers = !VisualSettings.showTracers; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  −  " + VisualSettings.crosshairSize),
-                b -> { VisualSettings.crosshairSize = Math.max(2, VisualSettings.crosshairSize - 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 181, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR SIZE  +"),
-                b -> { VisualSettings.crosshairSize = Math.min(14, VisualSettings.crosshairSize + 1); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 181, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CROSSHAIR COLOR  •  " + String.format("#%06X", VisualSettings.crosshairColor & 0xFFFFFF)),
-                b -> { VisualSettings.crosshairColor = cycleColor(VisualSettings.crosshairColor); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 211, contentW, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("DIAMOND ORE  •  " + (VisualSettings.scanDiamond ? "ON" : "OFF")),
-                b -> { VisualSettings.scanDiamond = !VisualSettings.scanDiamond; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 241, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("ANCIENT DEBRIS  •  " + (VisualSettings.scanDebris ? "ON" : "OFF")),
-                b -> { VisualSettings.scanDebris = !VisualSettings.scanDebris; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 241, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("CHESTS  •  " + (VisualSettings.scanChests ? "ON" : "OFF")),
-                b -> { VisualSettings.scanChests = !VisualSettings.scanChests; NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 271, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("ORE RADIUS  −  " + OreESP.getRadius()),
-                b -> { OreESP.setRadius(OreESP.getRadius() - 2); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX, top + 301, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("ORE RADIUS  +"),
-                b -> { OreESP.setRadius(OreESP.getRadius() + 2); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                .bounds(contentX + half + 6, top + 301, half, 25).build());
-            int oreIndex = 0;
-            for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
-                int col = oreIndex % 3;
-                int row = oreIndex / 3;
-                int cellW = Math.max(1, (contentW - 12) / 3);
-                addRenderableWidget(Button.builder(Component.literal(group.label + "  " + (OreESP.isEnabled(group) ? "ON" : "OFF")),
-                    b -> { OreESP.setEnabled(group, !OreESP.isEnabled(group)); NexusClient.saveConfig(); Minecraft.getInstance().setScreen(new ClickGuiScreen("Render")); })
-                    .bounds(contentX + col * (cellW + 6), top + 331 + row * 28, cellW, 24).build());
-                oreIndex++;
-            }
-            int rowY = top + 421;
-            for (Module feature : NexusClient.MODULES.all()) {
-                if (!feature.categoryName().equalsIgnoreCase(selected)) continue;
-                if (rowY > top + panelHeight - 58) break;
-                addRenderableWidget(Button.builder(Component.literal(feature.name + "     [" + (feature.enabled ? "ON" : "OFF") + "]"), b -> {
-                    NexusClient.toggle(feature);
-                    Minecraft.getInstance().setScreen(new ClickGuiScreen(selected));
-                }).bounds(contentX, rowY, contentW, 22).build());
-                rowY += 25;
-            }
-        } else if (selected.equals("Profiles")) {
-            profileName = new EditBox(font, contentX, top + 91, contentW, 22, Component.literal("Profile name"));
-            profileName.setMaxLength(24);
-            profileName.setValue("default");
-            addRenderableWidget(profileName);
-            int half = contentW / 2 - 3;
-            addRenderableWidget(Button.builder(Component.literal("SAVE PROFILE"),
-                b -> { boolean ok = NexusConfig.saveProfile(profileName.getValue().trim()); notice = ok ? "Profile saved." : "Use 1-24 letters, numbers, _ or -."; })
-                .bounds(contentX, top + 120, half, 26).build());
-            addRenderableWidget(Button.builder(Component.literal("LOAD PROFILE"),
-                b -> { boolean ok = NexusConfig.loadProfile(profileName.getValue().trim()); notice = ok ? "Profile loaded." : "Profile not found or invalid name."; })
-                .bounds(contentX + half + 6, top + 120, half, 26).build());
-            addRenderableWidget(Button.builder(Component.literal("DELETE PROFILE"),
-                b -> { boolean ok = NexusConfig.deleteProfile(profileName.getValue().trim()); notice = ok ? "Profile deleted." : "Profile not found."; })
-                .bounds(contentX, top + 152, contentW, 26).build());
-            int rowY = top + 193;
-            gappedProfileList(contentX, contentW, rowY);
-        } else {
-            int rowY = selected.equals("Movement") ? top + 215 : top + 91;
-            int shown = 0;
-            for (Module feature : NexusClient.MODULES.all()) {
-                if (!feature.categoryName().equalsIgnoreCase(selected)) continue;
-                if (rowY > top + panelHeight - 58) break;
-                String state = feature.enabled ? "ON" : "OFF";
-                String label = feature.name + "     [" + state + "]";
-                int buttonHeight = selected.equals("Movement") ? 20 : 27;
-                int rowGap = selected.equals("Movement") ? 22 : 33;
-                addRenderableWidget(Button.builder(Component.literal(label), b -> {
-                    NexusClient.toggle(feature);
-                    Minecraft.getInstance().setScreen(new ClickGuiScreen(selected));
-                }).bounds(contentX, rowY, contentW, buttonHeight).build());
-                rowY += rowGap;
-                shown++;
-            }
-            if (shown == 0) notice = "No modules in this category yet.";
+        int x0=130;g.drawString(font,pretty(category.name()).toUpperCase()+" MODULES",x0,51,TEXT,false);
+        g.drawString(font,"Tap a card to toggle  ·  gear to inspect",x0,64,MUTED,false);
+        g.fill(x0,82,x0+246,105,0xFF171E29);border(g,x0,82,246,23,LINE);
+        g.drawString(font,search.isEmpty()?"Search modules...":search,x0+8,90,searchFocused?TEXT:MUTED,false);
+
+        List<Module> modules=visibleModules();
+        int rows=(modules.size()+1)/2;
+        int maxScroll=Math.max(0,rows*50-214);scroll=Math.max(0,Math.min(scroll,maxScroll));
+        g.enableScissor((int)(ox+x0*scale),(int)(oy+112*scale),(int)(ox+380*scale),(int)(oy+H-FOOTER-5)*1);
+        for(int i=0;i<modules.size();i++){
+            Module m=modules.get(i);int x=x0+(i%2)*126,y=116+(i/2)*50-scroll;
+            if(y<-45||y>H-FOOTER-4)continue;
+            boolean on=m.enabled;
+            g.fill(x,y,x+118,y+43,on?0xFF1D302D:hit(localX,localY,x,y,118,43)?HOVER:CARD);
+            border(g,x,y,118,43,on?0xFF376D5C:LINE);
+            g.fill(x+7,y+8,x+9,y+35,on?GREEN:0xFF485366);
+            String name=m.name;g.drawString(font,name,x+15,y+8,on?TEXT:MUTED,false);
+            g.drawString(font,on?"ENABLED":"DISABLED",x+15,y+25,on?GREEN:MUTED,false);
+            g.fill(x+98,y+5,x+113,y+20,selected!=null&&selected.equals(name)?0xFF403C67:0xFF252D3B);
+            g.drawString(font,"*",x+103,y+8,ACCENT,false);
         }
+        g.disableScissor();
+        if(modules.isEmpty())g.drawString(font,"No modules in this category.",x0+8,124,MUTED,false);
 
-        addRenderableWidget(Button.builder(Component.literal("SAVE"),
-            b -> { NexusClient.saveConfig(); notice = "Configuration saved."; })
-            .bounds(left + 4, top + panelHeight - 34, Math.max(1, sidebarWidth - 8), 22).build());
-        addRenderableWidget(Button.builder(Component.literal("CLOSE"),
-            b -> Minecraft.getInstance().setScreen(null)).bounds(Math.max(left + 4, left + panelWidth - 82), top + panelHeight - 34, Math.max(1, Math.min(78, panelWidth - 8)), 22).build());
-    }
-
-    private void gappedProfileList(int x, int w, int y) {
-        List<String> profiles = NexusConfig.profiles();
-        int shown = 0;
-        for (String profile : profiles) {
-            if (shown >= 5 || y + shown * 17 > top + panelHeight - 55) break;
-            shown++;
+        int px=390,py=51,pw=256,ph=H-HEADER-FOOTER-13;
+        g.fill(px,py,px+pw,py+ph,PANEL);border(g,px,py,pw,ph,LINE);
+        g.fill(px,py,px+pw,py+31,0xFF1B2230);g.drawString(font,"MODULE SETTINGS",px+11,62,MUTED,false);
+        Module chosen=selected==null?null:NexusClient.MODULES.get(selected).orElse(null);
+        if(chosen==null||chosen.category!=category){
+            g.drawString(font,"Choose a module",px+13,108,TEXT,false);
+            g.drawString(font,"Tap a module's gear icon to",px+13,127,MUTED,false);
+            g.drawString(font,"inspect its available controls.",px+13,140,MUTED,false);
+        }else{
+            boolean on=chosen.enabled;
+            g.drawString(font,chosen.name,px+12,94,TEXT,false);
+            g.fill(px+pw-62,py+37,px+pw-12,py+56,on?0xFF214B3D:0xFF303846);
+            g.drawString(font,on?"ON":"OFF",px+pw-47,py+44,on?GREEN:MUTED,false);
+            g.drawString(font,"CATEGORY",px+12,125,MUTED,false);
+            g.drawString(font,pretty(chosen.category.name()),px+12,141,TEXT,false);
+            g.drawString(font,"STATE",px+12,169,MUTED,false);
+            g.drawString(font,on?"Enabled":"Disabled",px+12,185,on?GREEN:MUTED,false);
+            g.fill(px+12,204,px+pw-12,205,LINE);
+            if("Speed".equals(chosen.name)){
+                g.drawString(font,"SPEED MULTIPLIER",px+12,218,TEXT,false);
+                settingButtons(g,px+pw-72,212,String.format("%.2fx",MovementSettings.speedMultiplier));
+                g.drawString(font,"MODE",px+12,246,TEXT,false);
+                settingButtons(g,px+pw-72,240,MovementSettings.speedMode);
+            }else if("Fly".equals(chosen.name)){
+                g.drawString(font,"VERTICAL SPEED",px+12,218,TEXT,false);
+                settingButtons(g,px+pw-72,212,String.format("%.2f",MovementSettings.verticalSpeed));
+            }else if("Velocity".equals(chosen.name)){
+                g.drawString(font,"KNOCKBACK SCALE",px+12,218,TEXT,false);
+                settingButtons(g,px+pw-72,212,String.format("%.1fx",MovementSettings.velocityScale));
+            }else if("ESP".equals(chosen.name)||"BlockESP".equals(chosen.name)){
+                g.drawString(font,"BOX STYLE",px+12,218,TEXT,false);
+                settingButtons(g,px+pw-72,212,VisualSettings.esp3d?"3D":"2D");
+            }else{
+                g.drawString(font,"No extra settings exposed",px+12,224,MUTED,false);
+                g.drawString(font,"for this module yet.",px+12,240,MUTED,false);
+            }
+            g.drawString(font,"Changes apply immediately.",px+12,H-FOOTER-40,MUTED,false);
         }
-        if (profiles.isEmpty()) notice = "No saved profiles yet. Save one above.";
-        else notice = "Saved profiles: " + String.join(", ", profiles.subList(0, Math.min(4, profiles.size())));
+        g.fill(118,H-FOOTER,W,H,0xFF171D29);
+        g.drawString(font,"RIGHT SHIFT  /  ESC  ·  CLOSE",132,H-14,MUTED,false);
+        g.drawString(font,NexusClient.MODULES.all().stream().filter(m->m.enabled).count()+" ACTIVE",W-86,H-14,GREEN,false);
+        g.pose().popMatrix();super.render(g,mx,my,partialTick);
     }
 
-    private static int cycleColor(int color) {
-        int[] colors = {0xFFFF4545, 0xFFFFB347, 0xFF45E68A, 0xFF45B8FF, 0xFFB58CFF, 0xFFFF6BCE, 0xFFFFFFFF};
-        for (int i = 0; i < colors.length; i++) if (colors[i] == color) return colors[(i + 1) % colors.length];
-        return colors[0];
+    private void settingButtons(GuiGraphics g,int x,int y,String value){
+        g.fill(x,y,x+18,y+19,0xFF303846);g.fill(x+54,y,x+72,y+19,0xFF303846);
+        g.drawString(font,"-",x+7,y+6,TEXT,false);g.drawString(font,"+",x+61,y+6,TEXT,false);
+        g.drawString(font,value,x+25-font.width(value)/2,y+6,ACCENT,false);
     }
 
-    private static String accentName() {
-        return switch (NexusClient.accentIndex) {
-            case 1 -> "BLUE";
-            case 2 -> "VIOLET";
-            case 3 -> "AMBER";
-            case 4 -> "PINK";
-            default -> "CYAN";
-        };
-    }
-
-    @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        g.fill(0, 0, width, height, 0x99050A10);
-        g.fill(left, top, left + panelWidth, top + panelHeight, 0xF0101822);
-        g.fill(left, top, left + panelWidth, top + 3, NexusClient.accent());
-        g.fill(left, top + 48, left + panelWidth, top + 49, 0xFF263A46);
-        g.fill(left + sidebarWidth, top + 49, left + sidebarWidth + 1, top + panelHeight - 48, 0xFF263A46);
-        g.drawString(font, "NEXUS", left + 10, top + 15, NexusClient.accent(), false);
-        if (panelWidth >= 300) g.drawString(font, "V1  /  CLIENT CONTROL CENTER", left + 75, top + 16, 0xFFB8C8D0, false);
-        g.drawString(font, selected.toUpperCase(), left + sidebarWidth + 18, top + 65, 0xFFFFFFFF, false);
-        if (panelWidth >= 300) g.drawString(font, "CLIENT-SIDE UTILITIES", left + 15, top + 51, 0xFF78909C, false);
-        if (selected.equals("Profiles")) {
-            int profileY = top + 193;
-            for (String profile : NexusConfig.profiles()) {
-                if (profileY > top + panelHeight - 55) break;
-                g.drawString(font, "- " + profile, left + sidebarWidth + 18, profileY, 0xFFB8C8D0, false);
-                profileY += 15;
+    @Override public boolean mouseClicked(MouseButtonEvent e,boolean dbl){
+        int x=(int)((e.x()-ox)/scale),y=(int)((e.y()-oy)/scale);
+        if(e.button()!=0)return true;
+        if(hit(x,y,W-28,9,17,18)){closeGui();return true;}
+        for(int i=0;i<CATEGORIES.length;i++)if(hit(x,y,9,66+i*37,100,30)){
+            category=CATEGORIES[i];selected=null;search="";searchFocused=false;scroll=0;return true;
+        }
+        if(hit(x,y,130,82,246,23)){searchFocused=true;return true;}
+        List<Module> modules=visibleModules();
+        for(int i=0;i<modules.size();i++){
+            Module m=modules.get(i);int bx=130+(i%2)*126,by=116+(i/2)*50-scroll;
+            if(hit(x,y,bx,by,118,43)){
+                if(x>=bx+96)selected=m.name;
+                else{m.toggle();NexusClient.saveConfig();selected=m.name;}
+                return true;
             }
         }
-        if (panelHeight >= 190) g.drawString(font, notice, left + 10, top + panelHeight - 17, 0xFF78909C, false);
-        super.render(g, mouseX, mouseY, partialTick);
+        if(selected!=null){
+            int px=390,yy=212,bx=px+256-72;
+            if("Speed".equals(selected)){
+                if(hit(x,y,bx,yy,18,19)){MovementSettings.speedMultiplier=Math.max(1F,MovementSettings.speedMultiplier-.1F);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,yy,18,19)){MovementSettings.speedMultiplier=Math.min(3F,MovementSettings.speedMultiplier+.1F);NexusClient.saveConfig();return true;}
+                if(hit(x,y,px+12,240,232,19)){MovementSettings.speedMode=switch(MovementSettings.speedMode){case "Normal"->"Bhop";case "Bhop"->"Timer";default->"Normal";};NexusClient.saveConfig();return true;}
+            }else if("Fly".equals(selected)){
+                if(hit(x,y,bx,yy,18,19)){MovementSettings.verticalSpeed=Math.max(.1F,MovementSettings.verticalSpeed-.05F);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,yy,18,19)){MovementSettings.verticalSpeed=Math.min(1.5F,MovementSettings.verticalSpeed+.05F);NexusClient.saveConfig();return true;}
+            }else if("Velocity".equals(selected)){
+                if(hit(x,y,bx,yy,18,19)){MovementSettings.velocityScale=Math.max(0F,MovementSettings.velocityScale-.1F);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,yy,18,19)){MovementSettings.velocityScale=Math.min(1F,MovementSettings.velocityScale+.1F);NexusClient.saveConfig();return true;}
+            }else if("ESP".equals(selected)||"BlockESP".equals(selected)){
+                if(hit(x,y,bx,yy,72,19)){VisualSettings.esp3d=!VisualSettings.esp3d;NexusClient.saveConfig();return true;}
+            }
+        }
+        return true;
     }
 
-    @Override
-    public boolean isPauseScreen() { return false; }
+    @Override public boolean mouseScrolled(double mx,double my,double sx,double sy){
+        int x=(int)((mx-ox)/scale),y=(int)((my-oy)/scale);
+        if(x>=130&&x<378&&y>=112&&y<H-FOOTER){int rows=(visibleModules().size()+1)/2;int max=Math.max(0,rows*50-214);scroll=Math.max(0,Math.min(max,scroll-(int)(sy*50)));return true;}
+        return super.mouseScrolled(mx,my,sx,sy);
+    }
+
+    @Override public boolean keyPressed(KeyEvent e){
+        int k=e.key();
+        if(k==GLFW.GLFW_KEY_ESCAPE||k==GLFW.GLFW_KEY_RIGHT_SHIFT){if(searchFocused){searchFocused=false;return true;}closeGui();return true;}
+        if(searchFocused){
+            if(k==GLFW.GLFW_KEY_BACKSPACE){if(!search.isEmpty())search=search.substring(0,search.length()-1);scroll=0;return true;}
+            if(k>=GLFW.GLFW_KEY_A&&k<=GLFW.GLFW_KEY_Z){search+=(char)('a'+k-GLFW.GLFW_KEY_A);scroll=0;return true;}
+            if(k>=GLFW.GLFW_KEY_0&&k<=GLFW.GLFW_KEY_9){search+=(char)('0'+k-GLFW.GLFW_KEY_0);scroll=0;return true;}
+            if(k==GLFW.GLFW_KEY_SPACE){search+=" ";return true;}
+            return true;
+        }
+        return super.keyPressed(e);
+    }
+
+    private void closeGui(){NexusClient.saveConfig();Minecraft.getInstance().setScreen(null);}
+    @Override public boolean isPauseScreen(){return false;}
+    private static String pretty(String s){String lower=s.toLowerCase();return Character.toUpperCase(lower.charAt(0))+lower.substring(1);}
+    private static boolean hit(int a,int b,int x,int y,int w,int h){return a>=x&&a<x+w&&b>=y&&b<y+h;}
+    private static void border(GuiGraphics g,int x,int y,int w,int h,int c){g.fill(x,y,x+w,y+1,c);g.fill(x,y+h-1,x+w,y+h,c);g.fill(x,y,x+1,y+h,c);g.fill(x+w-1,y,x+w,y+h,c);}
 }
