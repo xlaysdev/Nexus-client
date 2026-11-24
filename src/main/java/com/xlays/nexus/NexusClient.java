@@ -8,6 +8,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.api.distmarker.Dist;
@@ -38,6 +40,8 @@ public final class NexusClient {
     private static final long STARTED_AT = System.currentTimeMillis();
     private static final Deque<Long> LEFT_CLICKS = new ArrayDeque<>();
     private static boolean leftWasDown;
+    private static long lastAutoClickAt;
+    private static long lastAuraAttackAt;
     private static final KeyMapping OPEN_GUI = new KeyMapping(
         "key.nexus.clickgui", InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_RIGHT_SHIFT, KeyMapping.Category.MISC
@@ -60,6 +64,9 @@ public final class NexusClient {
         add("Attack Cooldown", "Combat", false);
         add("Totem Counter", "Combat", false);
         add("Potion Effects", "Combat", false);
+        add("AutoClicker", "Combat", false);
+        add("TriggerBot", "Combat", false);
+        add("KillAura", "Combat", false);
         add("Watermark", "HUD", true);
         add("FPS", "HUD", true);
         add("Coordinates", "HUD", true);
@@ -93,6 +100,42 @@ public final class NexusClient {
         } else {
             leftWasDown = false;
         }
+        if (mc.player != null && mc.level != null && mc.gameMode != null && mc.screen == null) {
+            long now = System.currentTimeMillis();
+            LivingEntity crosshairTarget = mc.hitResult instanceof EntityHitResult hit
+                && hit.getEntity() instanceof LivingEntity living && living.isAlive() ? living : null;
+
+            // Manual-hold click repeater: only repeats while the player physically holds left mouse.
+            if (enabled("AutoClicker") && leftWasDown && crosshairTarget != null
+                && now - lastAutoClickAt >= 125L && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
+                performAttack(mc, crosshairTarget);
+                lastAutoClickAt = now;
+            }
+
+            // TriggerBot attacks only the living entity already under the crosshair.
+            if (enabled("TriggerBot") && crosshairTarget != null
+                && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
+                performAttack(mc, crosshairTarget);
+            }
+
+            // Basic close-range aura: selects the nearest visible player within vanilla reach.
+            if (enabled("KillAura") && now - lastAuraAttackAt >= 50L
+                && mc.player.getAttackStrengthScale(0.0F) >= 1.0F) {
+                Player target = mc.level.getEntitiesOfClass(Player.class,
+                    mc.player.getBoundingBox().inflate(4.0D),
+                    candidate -> candidate != mc.player && candidate.isAlive()
+                        && mc.player.hasLineOfSight(candidate))
+                    .stream()
+                    .filter(candidate -> mc.player.distanceTo(candidate) <= 3.0F)
+                    .min(java.util.Comparator.comparingDouble(mc.player::distanceTo))
+                    .orElse(null);
+                if (target != null) {
+                    performAttack(mc, target);
+                    lastAuraAttackAt = now;
+                }
+            }
+        }
+
         long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
     }
@@ -239,6 +282,12 @@ public final class NexusClient {
                 ry += 13;
             }
         }
+    }
+
+    private static void performAttack(Minecraft mc, LivingEntity target) {
+        if (mc.player == null || mc.gameMode == null || target == null || !target.isAlive()) return;
+        mc.gameMode.attack(mc.player, target);
+        mc.player.swing(InteractionHand.MAIN_HAND);
     }
 
     private static void text(GuiGraphics g, String value, int x, int y) {
