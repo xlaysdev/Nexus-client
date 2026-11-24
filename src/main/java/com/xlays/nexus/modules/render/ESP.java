@@ -23,9 +23,9 @@ public final class ESP extends Module {
   for(Player target:mc.level.players()){
    if(target==mc.player||!target.isAlive())continue;
    var selfTeam=mc.player.getTeam();var team=target.getTeam();
-   int color=selfTeam!=null&&selfTeam.equals(team)?VisualModules.friendColor:VisualModules.enemyColor;
-   if(VisualModules.esp3d)ShapeRenderer.renderShape(pose,out,Shapes.create(target.getBoundingBox().inflate(.035)),0,0,0,color,2);
-   if(VisualModules.showTracers){var matrix=pose.last().pose();out.addVertex(matrix,0,0,0).setColor(color);
+   int color=selfTeam!=null&&selfTeam.equals(team)?VisualSettings.friendColor:VisualSettings.enemyColor;
+   if(VisualSettings.esp3d)ShapeRenderer.renderShape(pose,out,Shapes.create(target.getBoundingBox().inflate(.035)),0,0,0,color,2);
+   if(VisualSettings.showTracers){var matrix=pose.last().pose();out.addVertex(matrix,0,0,0).setColor(color);
     out.addVertex(matrix,(float)target.getX(),(float)(target.getY()+target.getBbHeight()),(float)target.getZ()).setColor(color);}
   }
   buffers.endBatch(type);pose.popPose();
