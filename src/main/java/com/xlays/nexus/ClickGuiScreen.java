@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import com.xlays.nexus.modules.movement.MovementModules;
 import com.xlays.nexus.modules.render.VisualModules;
 import com.xlays.nexus.modules.render.OreESP;
-import com.xlays.nexus.module.Module;
+import com.xlays.nexus.modules.Module;
 
 import java.util.List;
 
