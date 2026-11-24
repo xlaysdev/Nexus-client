@@ -20,10 +20,10 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
-import com.xlays.nexus.combat.CombatModules;
-import com.xlays.nexus.movement.MovementModules;
-import com.xlays.nexus.visual.VisualModules;
-import com.xlays.nexus.visual.OreESP;
+import com.xlays.nexus.modules.combat.CombatModules;
+import com.xlays.nexus.modules.movement.MovementModules;
+import com.xlays.nexus.modules.render.VisualModules;
+import com.xlays.nexus.modules.render.OreESP;
 import com.xlays.nexus.module.Module;
 import com.xlays.nexus.module.ModuleManager;
 
