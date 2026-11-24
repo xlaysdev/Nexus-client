@@ -10,7 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.item.equipment.ArmorItem;
+import net.minecraft.core.component.DataComponents;\nimport net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -74,8 +74,9 @@ public final class CombatModules {
         var inventory = mc.player.getInventory();
         for (int invIndex = 0; invIndex < 36; invIndex++) {
             ItemStack candidate = inventory.getItem(invIndex);
-            if (!(candidate.getItem() instanceof ArmorItem candidateArmor)) continue;
-            var equipmentSlot = candidateArmor.getEquipmentSlot();
+            Equippable equippable = candidate.get(DataComponents.EQUIPPABLE);
+            if (equippable == null) continue;
+            var equipmentSlot = equippable.slot();
             int armorMenuSlot = switch (equipmentSlot) {
                 case HEAD -> 5;
                 case CHEST -> 6;
@@ -85,8 +86,7 @@ public final class CombatModules {
             };
             if (armorMenuSlot < 0) continue;
             ItemStack equipped = mc.player.getItemBySlot(equipmentSlot);
-            if (armorScore(candidateArmor, candidate) <= armorScore(
-                equipped.getItem() instanceof ArmorItem currentArmor ? currentArmor : null, equipped)) continue;
+            if (armorScore(candidate) <= armorScore(equipped)) continue;
 
             int sourceMenuSlot = inventoryMenuSlot(invIndex);
             int menu = mc.player.inventoryMenu.containerId;
@@ -98,13 +98,19 @@ public final class CombatModules {
         }
     }
 
-    private static double armorScore(ArmorItem armor, ItemStack stack) {
-        if (armor == null || stack.isEmpty()) return -1.0D;
-        double defense = armor.getDefense();
-        double toughness = armor.getToughness();
+    private static double armorScore(ItemStack stack) {
+        if (stack.isEmpty() || stack.get(DataComponents.EQUIPPABLE) == null) return -1.0D;
+        String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        double material = id.startsWith("netherite_") ? 6.0D
+            : id.startsWith("diamond_") ? 5.0D
+            : id.startsWith("iron_") ? 4.0D
+            : id.startsWith("chainmail_") ? 3.0D
+            : id.startsWith("golden_") ? 2.5D
+            : id.startsWith("turtle_") ? 3.5D
+            : id.startsWith("leather_") ? 1.0D : 0.0D;
         double durability = stack.isDamageableItem()
             ? (double) (stack.getMaxDamage() - stack.getDamageValue()) / Math.max(1, stack.getMaxDamage()) : 1.0D;
-        return defense * 100.0D + toughness * 20.0D + durability * 5.0D;
+        return material * 100.0D + durability * 20.0D;
     }
 
     private static void crystalAura(Minecraft mc) {
