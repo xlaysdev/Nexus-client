@@ -6,9 +6,9 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import com.xlays.nexus.movement.MovementModules;
-import com.xlays.nexus.visual.VisualModules;
-import com.xlays.nexus.visual.OreESP;
+import com.xlays.nexus.modules.movement.MovementModules;
+import com.xlays.nexus.modules.render.VisualModules;
+import com.xlays.nexus.modules.render.OreESP;
 import com.xlays.nexus.module.Module;
 
 import java.util.List;
