@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import com.xlays.nexus.movement.MovementModules;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public final class ClickGuiScreen extends Screen {
     @Override
     protected void init() {
         panelWidth = Math.max(300, Math.min(760, width - 20));
-        panelHeight = Math.max(260, Math.min(470, height - 20));
+        panelHeight = Math.max(260, Math.min(620, height - 20));
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
         sidebarWidth = Math.max(92, Math.min(145, panelWidth / 4));
@@ -63,6 +64,29 @@ public final class ClickGuiScreen extends Screen {
             addRenderableWidget(Button.builder(Component.literal("SAVE SETTINGS"),
                 b -> { NexusClient.saveConfig(); notice = "Settings saved."; })
                 .bounds(contentX, top + 256, contentW, 27).build());
+        } else if (selected.equals("Movement")) {
+            int half = contentW / 2 - 3;
+            addRenderableWidget(Button.builder(Component.literal("SPEED  -  " + String.format("%.2fx", MovementModules.speedMultiplier)),
+                b -> { MovementModules.speedMultiplier = Math.max(1.0F, MovementModules.speedMultiplier - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX, top + 91, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("SPEED  +"),
+                b -> { MovementModules.speedMultiplier = Math.min(3.0F, MovementModules.speedMultiplier + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX + half + 6, top + 91, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("SPEED MODE  -  " + MovementModules.speedMode),
+                b -> { MovementModules.speedMode = switch (MovementModules.speedMode) { case "Normal" -> "Bhop"; case "Bhop" -> "Timer"; default -> "Normal"; }; Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX, top + 121, contentW, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  -  " + String.format("%.2f", MovementModules.verticalSpeed)),
+                b -> { MovementModules.verticalSpeed = Math.max(0.1F, MovementModules.verticalSpeed - 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX, top + 151, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  +"),
+                b -> { MovementModules.verticalSpeed = Math.min(1.5F, MovementModules.verticalSpeed + 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX + half + 6, top + 151, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  -  " + String.format("%.1fx", MovementModules.velocityScale)),
+                b -> { MovementModules.velocityScale = Math.max(0.0F, MovementModules.velocityScale - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX, top + 181, half, 25).build());
+            addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  +"),
+                b -> { MovementModules.velocityScale = Math.min(1.0F, MovementModules.velocityScale + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                .bounds(contentX + half + 6, top + 181, half, 25).build());
         } else if (selected.equals("Profiles")) {
             profileName = new EditBox(font, contentX, top + 91, contentW, 22, Component.literal("Profile name"));
             profileName.setMaxLength(24);
@@ -81,18 +105,20 @@ public final class ClickGuiScreen extends Screen {
             int rowY = top + 193;
             gappedProfileList(contentX, contentW, rowY);
         } else {
-            int rowY = top + 91;
+            int rowY = selected.equals("Movement") ? top + 215 : top + 91;
             int shown = 0;
             for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
                 if (!feature.category.equals(selected)) continue;
                 if (rowY > top + panelHeight - 58) break;
                 String state = feature.enabled ? "ON" : "OFF";
                 String label = feature.name + "     [" + state + "]";
+                int buttonHeight = selected.equals("Movement") ? 20 : 27;
+                int rowGap = selected.equals("Movement") ? 22 : 33;
                 addRenderableWidget(Button.builder(Component.literal(label), b -> {
                     NexusClient.toggle(feature);
                     Minecraft.getInstance().setScreen(new ClickGuiScreen(selected));
-                }).bounds(contentX, rowY, contentW, 27).build());
-                rowY += 33;
+                }).bounds(contentX, rowY, contentW, buttonHeight).build());
+                rowY += rowGap;
                 shown++;
             }
             if (shown == 0) notice = "No modules in this category yet.";
