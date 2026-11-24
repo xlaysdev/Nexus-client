@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import com.xlays.nexus.modules.movement.MovementModules;
+import com.xlays.nexus.modules.movement.MovementSettings;
 import com.xlays.nexus.modules.render.VisualModules;
 import com.xlays.nexus.modules.render.OreESP;
 import com.xlays.nexus.modules.Module;
@@ -69,26 +69,26 @@ public final class ClickGuiScreen extends Screen {
                 .bounds(contentX, top + 256, contentW, 27).build());
         } else if (selected.equals("Movement")) {
             int half = Math.max(1, contentW / 2 - 3);
-            addRenderableWidget(Button.builder(Component.literal("SPEED  -  " + String.format("%.2fx", MovementModules.speedMultiplier)),
-                b -> { MovementModules.speedMultiplier = Math.max(1.0F, MovementModules.speedMultiplier - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+            addRenderableWidget(Button.builder(Component.literal("SPEED  -  " + String.format("%.2fx", MovementSettings.speedMultiplier)),
+                b -> { MovementSettings.speedMultiplier = Math.max(1.0F, MovementSettings.speedMultiplier - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX, top + 91, half, 25).build());
             addRenderableWidget(Button.builder(Component.literal("SPEED  +"),
-                b -> { MovementModules.speedMultiplier = Math.min(3.0F, MovementModules.speedMultiplier + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                b -> { MovementSettings.speedMultiplier = Math.min(3.0F, MovementSettings.speedMultiplier + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX + half + 6, top + 91, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("SPEED MODE  -  " + MovementModules.speedMode),
-                b -> { MovementModules.speedMode = switch (MovementModules.speedMode) { case "Normal" -> "Bhop"; case "Bhop" -> "Timer"; default -> "Normal"; }; Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+            addRenderableWidget(Button.builder(Component.literal("SPEED MODE  -  " + MovementSettings.speedMode),
+                b -> { MovementSettings.speedMode = switch (MovementSettings.speedMode) { case "Normal" -> "Bhop"; case "Bhop" -> "Timer"; default -> "Normal"; }; Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX, top + 121, contentW, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  -  " + String.format("%.2f", MovementModules.verticalSpeed)),
-                b -> { MovementModules.verticalSpeed = Math.max(0.1F, MovementModules.verticalSpeed - 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+            addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  -  " + String.format("%.2f", MovementSettings.verticalSpeed)),
+                b -> { MovementSettings.verticalSpeed = Math.max(0.1F, MovementSettings.verticalSpeed - 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX, top + 151, half, 25).build());
             addRenderableWidget(Button.builder(Component.literal("VERTICAL SPEED  +"),
-                b -> { MovementModules.verticalSpeed = Math.min(1.5F, MovementModules.verticalSpeed + 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                b -> { MovementSettings.verticalSpeed = Math.min(1.5F, MovementSettings.verticalSpeed + 0.05F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX + half + 6, top + 151, half, 25).build());
-            addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  -  " + String.format("%.1fx", MovementModules.velocityScale)),
-                b -> { MovementModules.velocityScale = Math.max(0.0F, MovementModules.velocityScale - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+            addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  -  " + String.format("%.1fx", MovementSettings.velocityScale)),
+                b -> { MovementSettings.velocityScale = Math.max(0.0F, MovementSettings.velocityScale - 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX, top + 181, half, 25).build());
             addRenderableWidget(Button.builder(Component.literal("KNOCKBACK  +"),
-                b -> { MovementModules.velocityScale = Math.min(1.0F, MovementModules.velocityScale + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
+                b -> { MovementSettings.velocityScale = Math.min(1.0F, MovementSettings.velocityScale + 0.1F); Minecraft.getInstance().setScreen(new ClickGuiScreen("Movement")); })
                 .bounds(contentX + half + 6, top + 181, half, 25).build());
         } else if (selected.equals("Render")) {
             int half = contentW / 2 - 3;
