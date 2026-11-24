@@ -22,6 +22,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 import com.xlays.nexus.combat.CombatModules;
 import com.xlays.nexus.movement.MovementModules;
+import com.xlays.nexus.visual.VisualModules;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -56,6 +57,7 @@ public final class NexusClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderHud);
         NeoForge.EVENT_BUS.addListener(MovementModules::onKnockback);
+        NeoForge.EVENT_BUS.addListener(VisualModules::onWorldRender);
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) { event.register(OPEN_GUI); }
@@ -86,6 +88,8 @@ public final class NexusClient {
         add("Reach", "Combat", false);
         add("Rotations", "Combat", true);
         add("Watermark", "HUD", true);
+        add("ArmorHUD", "HUD", false);
+        add("Keystrokes", "HUD", false);
         add("FPS", "HUD", true);
         add("Coordinates", "HUD", true);
         add("Direction", "HUD", true);
@@ -108,6 +112,10 @@ public final class NexusClient {
         add("Session Timer", "Misc", false);
         add("Biome", "Misc", false);
         add("Custom Crosshair", "Render", false);
+        add("ESP", "Render", false);
+        add("BlockESP", "Render", false);
+        add("Fullbright", "Render", false);
+        add("NoHurtCam", "Render", false);
     }
 
     private static void add(String name, String category, boolean enabled) {
@@ -148,6 +156,7 @@ public final class NexusClient {
             CombatModules.tick(mc);
         }
         if (mc.player != null && mc.level != null) MovementModules.tick(mc);
+        VisualModules.tick(mc);
 
         long cutoff = System.currentTimeMillis() - 1000;
         while (!LEFT_CLICKS.isEmpty() && LEFT_CLICKS.peekFirst() < cutoff) LEFT_CLICKS.removeFirst();
@@ -174,6 +183,9 @@ public final class NexusClient {
         if (enabled("Watermark")) {
             text(g, "NEXUS", x, y, accent());
             text(g, "V1", x + 48, y, 0xFFB8C8D0);
+            int ping = mc.getConnection() == null || mc.getConnection().getPlayerInfo(mc.player.getUUID()) == null
+                ? 0 : mc.getConnection().getPlayerInfo(mc.player.getUUID()).getLatency();
+            text(g, "FPS " + mc.getFps() + "  •  " + ping + "ms", x + 76, y, 0xFFE7F1F4);
             y += 19;
         }
         if (enabled("FPS")) { text(g, "FPS  " + mc.getFps(), x, y); y += line; }
@@ -340,20 +352,59 @@ public final class NexusClient {
             text(g, String.format("SESSION  %02d:%02d:%02d", seconds / 3600, (seconds / 60) % 60, seconds % 60), x, y);
         }
         g.pose().popMatrix();
+        if (enabled("ArmorHUD")) {
+            int ax = 8;
+            int ay = mc.getWindow().getGuiScaledHeight() - 28;
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
+                var stack = mc.player.getItemBySlot(slot);
+                int durability = stack.isEmpty() || !stack.isDamageableItem() ? 0
+                    : Math.max(0, 100 - stack.getDamageValue() * 100 / Math.max(1, stack.getMaxDamage()));
+                g.fill(ax - 3, ay - 3, ax + 49, ay + 19, 0xAA101820);
+                g.drawString(mc.font, slot.getName().substring(0, 1).toUpperCase(), ax, ay, accent(), false);
+                g.drawString(mc.font, stack.isEmpty() ? "EMPTY" : durability + "%", ax + 12, ay, 0xFFE7F1F4, false);
+                g.fill(ax + 12, ay + 10, ax + 46, ay + 12, 0xFF263A46);
+                if (!stack.isEmpty()) g.fill(ax + 12, ay + 10, ax + 12 + (34 * durability / 100), ay + 12, durability > 50 ? 0xFF45E6C4 : 0xFFFF6B8A);
+                ax += 55;
+            }
+        }
+        if (enabled("Keystrokes")) {
+            int kx = 10;
+            int ky = mc.getWindow().getGuiScaledHeight() - 86;
+            String[] labels = {"W", "A", "S", "D"};
+            boolean[] down = {mc.options.keyUp.isDown(), mc.options.keyLeft.isDown(), mc.options.keyDown.isDown(), mc.options.keyRight.isDown()};
+            int[][] positions = {{22,0},{0,22},{22,22},{44,22}};
+            for (int i = 0; i < labels.length; i++) {
+                int px = kx + positions[i][0], py = ky + positions[i][1];
+                g.fill(px, py, px + 20, py + 18, down[i] ? 0xDD45E6C4 : 0xAA101820);
+                g.drawCenteredString(mc.font, labels[i], px + 10, py + 5, down[i] ? 0xFF071018 : 0xFFE7F1F4);
+            }
+            boolean leftDown = org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+            boolean rightDown = org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+            g.fill(kx, ky + 43, kx + 31, ky + 62, leftDown ? 0xDD45E6C4 : 0xAA101820);
+            g.fill(kx + 35, ky + 43, kx + 66, ky + 62, rightDown ? 0xDD45E6C4 : 0xAA101820);
+            g.drawCenteredString(mc.font, "LMB", kx + 15, ky + 49, leftDown ? 0xFF071018 : 0xFFE7F1F4);
+            g.drawCenteredString(mc.font, "RMB", kx + 50, ky + 49, rightDown ? 0xFF071018 : 0xFFE7F1F4);
+        }
         if (enabled("Custom Crosshair")) {
             int cx = mc.getWindow().getGuiScaledWidth() / 2;
             int cy = mc.getWindow().getGuiScaledHeight() / 2;
-            g.fill(cx - 5, cy, cx + 6, cy + 1, accent());
-            g.fill(cx, cy - 5, cx + 1, cy + 6, accent());
+            int size = Math.max(2, Math.min(14, VisualModules.crosshairSize));
+            int color = VisualModules.crosshairColor;
+            g.fill(cx - size, cy, cx + size + 1, cy + 1, color);
+            g.fill(cx, cy - size, cx + 1, cy + size + 1, color);
         }
         if (enabled("Module List")) {
-            int rx = mc.getWindow().getGuiScaledWidth() - 8;
+            int screenWidth = mc.getWindow().getGuiScaledWidth();
             int ry = 8;
+            int index = 0;
             for (Feature f : FEATURES.values()) if (f.enabled) {
                 String label = f.name.toUpperCase();
                 int w = mc.font.width(label);
+                int rx = screenWidth - 8;
+                int rainbow = java.awt.Color.HSBtoRGB((index++ * 0.075f + (System.currentTimeMillis() % 6000L) / 6000.0f) % 1.0f, 0.82f, 1.0f) | 0xFF000000;
                 g.fill(rx - w - 8, ry - 2, rx + 2, ry + 10, 0xAA101820);
-                g.drawString(mc.font, label, rx - w - 3, ry, accent(), false);
+                g.fill(rx - w - 8, ry - 2, rx - w - 6, ry + 10, rainbow);
+                g.drawString(mc.font, label, rx - w - 3, ry, rainbow, false);
                 ry += 13;
             }
         }
