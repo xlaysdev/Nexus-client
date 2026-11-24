@@ -59,8 +59,6 @@ public final class NexusClient {
     private static final long STARTED_AT = System.currentTimeMillis();
     private static final Deque<Long> LEFT_CLICKS = new ArrayDeque<>();
     private static boolean leftWasDown;
-    private static long lastAutoClickAt;
-    private static long lastAuraAttackAt;
     private static final KeyMapping OPEN_GUI = new KeyMapping(
         "key.nexus.clickgui", InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_RIGHT_SHIFT, KeyMapping.Category.MISC
