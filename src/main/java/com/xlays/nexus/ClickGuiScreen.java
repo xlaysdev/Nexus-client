@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import com.xlays.nexus.movement.MovementModules;
 import com.xlays.nexus.visual.VisualModules;
 import com.xlays.nexus.visual.OreESP;
+import com.xlays.nexus.module.Module;
 
 import java.util.List;
 
@@ -144,7 +145,7 @@ public final class ClickGuiScreen extends Screen {
                 oreIndex++;
             }
             int rowY = top + 421;
-            for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
+            for (Module feature : NexusClient.MODULES.all()) {
                 if (!feature.category.equals(selected)) continue;
                 if (rowY > top + panelHeight - 58) break;
                 addRenderableWidget(Button.builder(Component.literal(feature.name + "     [" + (feature.enabled ? "ON" : "OFF") + "]"), b -> {
