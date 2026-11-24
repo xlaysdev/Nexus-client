@@ -67,6 +67,15 @@ public final class NexusClient {
         add("AutoClicker", "Combat", false);
         add("TriggerBot", "Combat", false);
         add("KillAura", "Combat", false);
+        add("Target Armor", "Combat", false);
+        add("Target Held Item", "Combat", false);
+        add("Target Effects", "Combat", false);
+        add("Target Hurt Time", "Combat", false);
+        add("Range Indicator", "Combat", false);
+        add("Low Health Warning", "Combat", false);
+        add("Critical Hit Indicator", "Combat", false);
+        add("Nearby Players", "Combat", false);
+        add("Enemy Health Bar", "Combat", false);
         add("Watermark", "HUD", true);
         add("FPS", "HUD", true);
         add("Coordinates", "HUD", true);
@@ -205,6 +214,68 @@ public final class NexusClient {
                 g.fill(x, y, x + Math.round(barWidth * Math.min(1.0F, health / maxHealth)), y + 5, accent());
                 y += 9;
             }
+            if (target instanceof LivingEntity living) {
+                if (enabled("Target Armor")) {
+                    int armor = living.getArmorValue();
+                    text(g, "TARGET ARMOR  " + armor, x, y);
+                    y += line;
+                }
+                if (enabled("Target Held Item") && living instanceof Player playerTarget) {
+                    String held = playerTarget.getMainHandItem().isEmpty() ? "EMPTY"
+                        : playerTarget.getMainHandItem().getHoverName().getString();
+                    text(g, "TARGET ITEM  " + held, x, y);
+                    y += line;
+                }
+                if (enabled("Target Effects")) {
+                    int shownEffects = 0;
+                    for (var effect : living.getActiveEffects()) {
+                        if (shownEffects++ >= 3) break;
+                        text(g, "TARGET " + effect.getEffect().value().getDisplayName().getString()
+                            + " " + Math.max(0, effect.getDuration() / 20) + "s", x, y);
+                        y += line;
+                    }
+                    if (shownEffects == 0) {
+                        text(g, "TARGET EFFECTS  NONE", x, y);
+                        y += line;
+                    }
+                }
+                if (enabled("Target Hurt Time")) {
+                    text(g, "HURT TIME  " + living.hurtTime, x, y);
+                    y += line;
+                }
+                if (enabled("Enemy Health Bar")) {
+                    int width = 140;
+                    float ratio = Math.max(0.0F, Math.min(1.0F, living.getHealth() / Math.max(1.0F, living.getMaxHealth())));
+                    g.fill(x, y, x + width, y + 6, 0xFF263A46);
+                    g.fill(x, y, x + Math.round(width * ratio), y + 6, ratio > 0.5F ? 0xFF45E6C4 : 0xFFFF6B8A);
+                    y += 10;
+                }
+            }
+            if (enabled("Range Indicator")) {
+                float distance = mc.player.distanceTo(target);
+                text(g, String.format("ATTACK RANGE  %.2f m  %s", distance,
+                    distance <= 3.0F ? "IN RANGE" : "OUT OF RANGE"), x, y,
+                    distance <= 3.0F ? 0xFF45E6C4 : 0xFFFF6B8A);
+                y += line;
+            }
+        }
+        if (enabled("Low Health Warning") && mc.player.getHealth() <= 6.0F) {
+            text(g, "LOW HEALTH  " + String.format("%.1f HP", mc.player.getHealth()), x, y, 0xFFFF6B8A);
+            y += line;
+        }
+        if (enabled("Critical Hit Indicator")) {
+            boolean canCrit = !mc.player.onGround() && mc.player.getDeltaMovement().y < 0.0D
+                && !mc.player.isFallFlying() && !mc.player.isInWater();
+            text(g, "CRITICAL  " + (canCrit ? "READY" : "NOT READY"), x, y,
+                canCrit ? 0xFF45E6C4 : 0xFFFFB86B);
+            y += line;
+        }
+        if (enabled("Nearby Players")) {
+            long nearby = mc.level.players().stream()
+                .filter(other -> other != mc.player && other.isAlive() && mc.player.distanceTo(other) <= 16.0F)
+                .count();
+            text(g, "PLAYERS NEARBY  " + nearby, x, y);
+            y += line;
         }
         if (enabled("Attack Cooldown")) {
             int cooldown = Math.round(mc.player.getAttackStrengthScale(0.0F) * 100.0F);
