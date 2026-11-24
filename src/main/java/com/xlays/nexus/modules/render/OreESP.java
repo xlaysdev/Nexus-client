@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 /** Cached, spherical ore scanner adapted for NEXUS V1. */
-public final class OreESP {
+public final class OreESP extends com.xlays.nexus.modules.Module {
     public enum OreGroup {
         COAL("Coal", Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE),
         IRON("Iron", Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE),
@@ -47,7 +47,9 @@ public final class OreESP {
         rebuildTargets();
     }
 
-    private OreESP() {}
+    public OreESP() { super("OreESP", Category.RENDER, false); }
+
+    @Override public void onTick() { tick(); }
 
     public static int getRadius() { return radius; }
     public static void setRadius(int value) {
