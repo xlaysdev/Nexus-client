@@ -174,8 +174,8 @@ public final class ClickGuiScreen extends Screen {
         } else {
             int rowY = selected.equals("Movement") ? top + 215 : top + 91;
             int shown = 0;
-            for (NexusClient.Feature feature : NexusClient.FEATURES.values()) {
-                if (!feature.category.equals(selected)) continue;
+            for (Module feature : NexusClient.MODULES.all()) {
+                if (!feature.categoryName().equalsIgnoreCase(selected)) continue;
                 if (rowY > top + panelHeight - 58) break;
                 String state = feature.enabled ? "ON" : "OFF";
                 String label = feature.name + "     [" + state + "]";
