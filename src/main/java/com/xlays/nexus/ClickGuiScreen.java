@@ -70,7 +70,7 @@ public final class ClickGuiScreen extends Screen {
         g.drawString(font,"STATUS",14,H-67,MUTED,false);g.fill(10,H-54,108,H-27,0xFF1C2930);
         g.fill(17,H-44,22,H-39,GREEN);g.drawString(font,"READY",29,H-45,GREEN,false);
 
-        int x0=130;g.drawString(font,pretty(category.name()).toUpperCase()+" MODULES",x0,51,TEXT,false);
+        int x0=130;g.drawString(font,categoryLabel(category).toUpperCase()+" MODULES",x0,51,TEXT,false);
         g.drawString(font,"Tap a card to toggle  ·  gear to inspect",x0,64,MUTED,false);
         g.fill(x0,82,x0+246,105,0xFF171E29);border(g,x0,82,246,23,LINE);
         g.drawString(font,search.isEmpty()?"Search modules...":search,x0+8,90,searchFocused?TEXT:MUTED,false);
