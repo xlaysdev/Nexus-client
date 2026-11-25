@@ -25,7 +25,7 @@ public final class BlockESP extends Module {
     private static final List<BlockPos> FOUND = new ArrayList<>();
     private static int scanTicks;
 
-    public BlockESP() { super("BlockESP", Category.RENDER, false); }
+    public BlockESP() { super("BlockESP", Category.RENDER, false);booleanSetting("diamond","Diamond ore",()->VisualSettings.scanDiamond,v->{VisualSettings.scanDiamond=v;refreshFilters();});booleanSetting("debris","Ancient debris",()->VisualSettings.scanDebris,v->{VisualSettings.scanDebris=v;refreshFilters();});booleanSetting("chests","Chests",()->VisualSettings.scanChests,v->{VisualSettings.scanChests=v;refreshFilters();});}
 
     public static void refreshFilters() {
         FOUND.clear();
