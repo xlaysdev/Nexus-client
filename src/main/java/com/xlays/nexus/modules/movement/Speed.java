@@ -1,23 +1,49 @@
 package com.xlays.nexus.modules.movement;
+
 import com.xlays.nexus.modules.Module;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import net.minecraft.client.player.LocalPlayer;
+
+/** Port of C00lgui's blocks-per-second Speed implementation. */
 public final class Speed extends Module {
- public Speed(){super("Speed",Category.MOVEMENT,false);}
- @Override public void onTick(){
-  Minecraft mc=Minecraft.getInstance(); Player p=mc.player;
-  if(p==null||mc.level==null){setTimer(mc,1);return;}
-  if(p.isSprinting()&&!p.isFallFlying()){Vec3 v=p.getDeltaMovement();p.setDeltaMovement(v.x*MovementSettings.speedMultiplier,v.y,v.z*MovementSettings.speedMultiplier);}
-  if("Bhop".equals(MovementSettings.speedMode)&&p.onGround()&&(p.zza!=0||p.xxa!=0))p.jumpFromGround();
-  setTimer(mc,"Timer".equals(MovementSettings.speedMode)?MovementSettings.timerMultiplier:1.0F);
- }
- private static void setTimer(Minecraft mc,float multiplier){
-  try{Field f=Minecraft.class.getDeclaredField("timer");f.setAccessible(true);Object t=f.get(mc);
-   for(Field x:t.getClass().getDeclaredFields())if(x.getType()==float.class&&x.getName().toLowerCase().contains("tick")){x.setAccessible(true);x.setFloat(t,20*multiplier);return;}
-   for(Method x:t.getClass().getDeclaredMethods())if(x.getParameterCount()==1&&x.getParameterTypes()[0]==float.class&&x.getName().toLowerCase().contains("tick")){x.setAccessible(true);x.invoke(t,20*multiplier);return;}
-  }catch(ReflectiveOperationException|RuntimeException ignored){}
- }
+    private static final double MIN_BPS = 5.0;
+    private static final double MAX_BPS = 15.0;
+    private static double blocksPerSecond = 5.0;
+
+    public Speed() {
+        super("Speed", Category.MOVEMENT, false);
+    }
+
+    public static double getBlocksPerSecond() {
+        return blocksPerSecond;
+    }
+
+    public static void setBlocksPerSecond(double value) {
+        if (!Double.isFinite(value)) return;
+        blocksPerSecond = Math.max(MIN_BPS, Math.min(MAX_BPS, value));
+    }
+
+    @Override
+    public void onTick() {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.level == null || player.input == null || player.isFallFlying()) return;
+
+        float forward = player.input.getMoveVector().y;
+        float strafe = player.input.getMoveVector().x;
+        if (forward == 0.0F && strafe == 0.0F) return;
+
+        // Same movement model as C00lgui: set horizontal velocity in blocks/tick.
+        double speedPerTick = blocksPerSecond / 20.0;
+        double radians = Math.toRadians(player.getYRot());
+        double sin = Math.sin(radians);
+        double cos = Math.cos(radians);
+
+        double motionX = (-sin * forward + cos * strafe) * speedPerTick;
+        double motionZ = (cos * forward + sin * strafe) * speedPerTick;
+        var velocity = player.getDeltaMovement();
+
+        player.setDeltaMovement(motionX, velocity.y, motionZ);
+        player.setSprinting(true);
+    }
 }
