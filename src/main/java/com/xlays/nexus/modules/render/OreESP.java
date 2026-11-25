@@ -50,6 +50,7 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
     public OreESP() { super("OreESP", Category.RENDER, false); }
 
     @Override public void onTick() { tick(); }
+    @Override public void onRender() { render(); }
 
     public static int getRadius() { return radius; }
     public static void setRadius(int value) {
