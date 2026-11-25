@@ -39,6 +39,12 @@ public final class CrystalAura extends Module {
 
     public CrystalAura() {
         super("CrystalAura", Category.COMBAT, false);
+        booleanSetting("hostiles","Target hostile mobs",()->targetHostiles,v->targetHostiles=v);
+        booleanSetting("players","Target players",()->targetPlayers,v->targetPlayers=v);
+        numberSetting("targetRange","Target range",()->targetRange,v->targetRange=v,4,24,.5);
+        numberSetting("placeRange","Placement range",()->placeRange,v->placeRange=v,3,6,.25);
+        numberSetting("delay","Action delay ms",()->actionDelayMs,v->actionDelayMs=v.intValue(),50,1000,25);
+        numberSetting("explosionRange","Explosion range",()->explosionRange,v->explosionRange=v,2,8,.5);
     }
 
     @Override
