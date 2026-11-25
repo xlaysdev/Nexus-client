@@ -10,6 +10,8 @@ public final class ModuleManager {
     private final Map<String, Module> modules = new LinkedHashMap<>();
 
     public <T extends Module> T register(T module) {
+        // Registration must never leave a module active during client initialization.
+        module.setEnabled(false);
         String key = module.name.toLowerCase(java.util.Locale.ROOT);
         if (modules.putIfAbsent(key, module) != null)
             throw new IllegalArgumentException("Duplicate module: " + module.name);
