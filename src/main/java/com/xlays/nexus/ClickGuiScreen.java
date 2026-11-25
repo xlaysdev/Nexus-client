@@ -18,7 +18,7 @@ import java.util.List;
 
 /** C00lgui-inspired responsive module browser for NEXUS. */
 public final class ClickGuiScreen extends Screen {
-    private static final int W=660,H=390,HEADER=38,FOOTER=22;
+    private static final int W=800,H=430,HEADER=38,FOOTER=22;
     private static final int BG=0xF00D1017,PANEL=0xFF141923,CARD=0xFF191F2B,HOVER=0xFF252E3D,LINE=0xFF2A3444;
     private static final int TEXT=0xFFF1F5FC,MUTED=0xFF8995A8,GREEN=0xFF55D6A0,ACCENT=0xFF9585FF,RED=0xFFFF7185;
     private static final Module.Category[] CATEGORIES={Module.Category.COMBAT,Module.Category.MOVEMENT,Module.Category.PLAYER,Module.Category.RENDER};
@@ -71,30 +71,30 @@ public final class ClickGuiScreen extends Screen {
         g.drawString(font,"STATUS",14,H-67,MUTED,false);g.fill(10,H-54,108,H-27,0xFF1C2930);
         g.fill(17,H-44,22,H-39,GREEN);g.drawString(font,"READY",29,H-45,GREEN,false);
 
-        int x0=130;g.drawString(font,categoryLabel(category).toUpperCase()+" MODULES",x0,51,TEXT,false);
+        int x0=140;g.drawString(font,categoryLabel(category).toUpperCase()+" MODULES",x0,51,TEXT,false);
         g.drawString(font,"Tap a card to toggle  ·  gear to inspect",x0,64,MUTED,false);
-        g.fill(x0,82,x0+246,105,0xFF171E29);border(g,x0,82,246,23,LINE);
+        g.fill(x0,82,x0+388,105,0xFF171E29);border(g,x0,82,388,23,LINE);
         g.drawString(font,search.isEmpty()?"Search modules...":search,x0+8,90,searchFocused?TEXT:MUTED,false);
 
         List<Module> modules=visibleModules();
         int rowHeight=50;
-        int maxScroll=Math.max(0,((modules.size()+1)/2)*rowHeight-214);scroll=Math.max(0,Math.min(scroll,maxScroll));
+        int listHeight=H-FOOTER-4-116;int maxScroll=Math.max(0,((modules.size()+1)/2)*rowHeight-listHeight);scroll=Math.max(0,Math.min(scroll,maxScroll));
         for(int i=0;i<modules.size();i++){
-            Module m=modules.get(i);int x=x0+(i%2)*126,y=116+(i/2)*rowHeight-scroll;
+            Module m=modules.get(i);int x=x0+(i%2)*198,y=116+(i/2)*rowHeight-scroll;
             if(y<-rowHeight||y>H-FOOTER-4)continue;
             boolean on=m.enabled;
-            boolean hovered=hit(localX,localY,x,y,118,43);
-            g.fill(x,y,x+118,y+43,on?0xFF1D302D:hovered?HOVER:CARD);
-            border(g,x,y,118,43,on?0xFF376D5C:LINE);
+            boolean hovered=hit(localX,localY,x,y,188,43);
+            g.fill(x,y,x+188,y+43,on?0xFF1D302D:hovered?HOVER:CARD);
+            border(g,x,y,188,43,on?0xFF376D5C:LINE);
             g.fill(x+7,y+8,x+9,y+35,on?GREEN:0xFF485366);
-            g.drawString(font,fit(m.name,96),x+15,y+8,on?TEXT:MUTED,false);
+            g.drawString(font,fit(m.name,146),x+15,y+8,on?TEXT:MUTED,false);
             g.drawString(font,on?"ENABLED":"DISABLED",x+15,y+25,on?GREEN:MUTED,false);
-            g.fill(x+98,y+5,x+113,y+20,selected!=null&&selected.equals(m.name)?0xFF403C67:0xFF252D3B);
-            g.drawString(font,"*",x+103,y+8,ACCENT,false);
+            g.fill(x+168,y+5,x+183,y+20,selected!=null&&selected.equals(m.name)?0xFF403C67:0xFF252D3B);
+            g.drawString(font,"*",x+173,y+8,ACCENT,false);
         }
         if(modules.isEmpty())g.drawString(font,"No modules in this category.",x0+8,124,MUTED,false);
 
-        int px=390,py=51,pw=256,ph=H-HEADER-FOOTER-13;
+        int px=540,py=51,pw=244,ph=H-HEADER-FOOTER-13;
         g.fill(px,py,px+pw,py+ph,PANEL);border(g,px,py,pw,ph,LINE);
         g.fill(px,py,px+pw,py+31,0xFF1B2230);g.drawString(font,"MODULE SETTINGS",px+11,62,MUTED,false);
         Module chosen=selected==null?null:NexusClient.MODULES.get(selected).orElse(null);
@@ -169,18 +169,18 @@ public final class ClickGuiScreen extends Screen {
         for(int i=0;i<CATEGORIES.length;i++)if(hit(x,y,9,66+i*37,100,30)){
             category=CATEGORIES[i];selected=null;search="";searchFocused=false;scroll=0;return true;
         }
-        if(hit(x,y,130,82,246,23)){searchFocused=true;return true;}
+        if(hit(x,y,140,82,388,23)){searchFocused=true;return true;}
         List<Module> modules=visibleModules();
         for(int i=0;i<modules.size();i++){
-            Module m=modules.get(i);int bx=130+(i%2)*126,by=116+(i/2)*50-scroll;
-            if(hit(x,y,bx+98,by+5,15,15)){selected=m.name;return true;}
-            if(hit(x,y,bx,by,118,43)){
+            Module m=modules.get(i);int bx=140+(i%2)*198,by=116+(i/2)*50-scroll;
+            if(hit(x,y,bx+168,by+5,15,15)){selected=m.name;return true;}
+            if(hit(x,y,bx,by,188,43)){
                 m.toggle();NexusClient.saveConfig();selected=m.name;
                 return true;
             }
         }
         if(selected!=null){
-            int px=390,yy=212,bx=px+256-72;
+            int px=540,yy=212,bx=px+244-72;
             if("Speed".equals(selected)){
                 if(hit(x,y,bx,yy,18,19)){MovementSettings.speedMultiplier=Math.max(1F,MovementSettings.speedMultiplier-.1F);NexusClient.saveConfig();return true;}
                 if(hit(x,y,bx+54,yy,18,19)){MovementSettings.speedMultiplier=Math.min(3F,MovementSettings.speedMultiplier+.1F);NexusClient.saveConfig();return true;}
@@ -209,7 +209,7 @@ public final class ClickGuiScreen extends Screen {
 
     @Override public boolean mouseScrolled(double mx,double my,double sx,double sy){
         int x=(int)((mx-ox)/scale),y=(int)((my-oy)/scale);
-        if(x>=130&&x<376&&y>=112&&y<H-FOOTER){int max=Math.max(0,((visibleModules().size()+1)/2)*50-214);scroll=Math.max(0,Math.min(max,scroll-(int)(sy*50)));return true;}
+        if(x>=140&&x<528&&y>=112&&y<H-FOOTER){int listHeight=H-FOOTER-4-116;int max=Math.max(0,((visibleModules().size()+1)/2)*50-listHeight);scroll=Math.max(0,Math.min(max,scroll-(int)(sy*50)));return true;}
         return super.mouseScrolled(mx,my,sx,sy);
     }
 
