@@ -75,20 +75,23 @@ public final class ClickGuiScreen extends Screen {
         g.drawString(font,search.isEmpty()?"Search modules...":search,x0+8,90,searchFocused?TEXT:MUTED,false);
 
         List<Module> modules=visibleModules();
-        int rows=(modules.size()+1)/2;
-        int maxScroll=Math.max(0,rows*50-214);scroll=Math.max(0,Math.min(scroll,maxScroll));
-        g.enableScissor((int)(ox+x0*scale),(int)(oy+112*scale),(int)(ox+382*scale),(int)(oy+(H-FOOTER-5)*scale));
+        int rowHeight=44;
+        int maxScroll=Math.max(0,modules.size()*rowHeight-214);scroll=Math.max(0,Math.min(scroll,maxScroll));
+        g.enableScissor((int)(ox+x0*scale),(int)(oy+112*scale),(int)(ox+376*scale),(int)(oy+(H-FOOTER-5)*scale));
         for(int i=0;i<modules.size();i++){
-            Module m=modules.get(i);int x=x0+(i%2)*126,y=116+(i/2)*50-scroll;
-            if(y<-45||y>H-FOOTER-4)continue;
+            Module m=modules.get(i);int x=x0,y=116+i*rowHeight-scroll;
+            if(y<-rowHeight||y>H-FOOTER-4)continue;
             boolean on=m.enabled;
-            g.fill(x,y,x+118,y+43,on?0xFF1D302D:hit(localX,localY,x,y,118,43)?HOVER:CARD);
-            border(g,x,y,118,43,on?0xFF376D5C:LINE);
-            g.fill(x+7,y+8,x+9,y+35,on?GREEN:0xFF485366);
-            String name=m.name;g.drawString(font,name,x+15,y+8,on?TEXT:MUTED,false);
-            g.drawString(font,on?"ENABLED":"DISABLED",x+15,y+25,on?GREEN:MUTED,false);
-            g.fill(x+98,y+5,x+113,y+20,selected!=null&&selected.equals(name)?0xFF403C67:0xFF252D3B);
-            g.drawString(font,"*",x+103,y+8,ACCENT,false);
+            boolean hovered=hit(localX,localY,x,y,246,38);
+            g.fill(x,y,x+246,y+38,on?0xFF1D302D:hovered?HOVER:CARD);
+            border(g,x,y,246,38,on?0xFF376D5C:LINE);
+            g.fill(x+8,y+7,x+10,y+31,on?GREEN:0xFF485366);
+            g.drawString(font,m.name,x+17,y+7,on?TEXT:MUTED,false);
+            g.drawString(font,on?"ENABLED":"DISABLED",x+17,y+21,on?GREEN:MUTED,false);
+            g.fill(x+185,y+8,x+220,y+29,on?0xFF245541:0xFF303846);
+            g.drawString(font,on?"ON":"OFF",x+194,y+14,on?GREEN:MUTED,false);
+            g.fill(x+225,y+8,x+238,y+29,selected!=null&&selected.equals(m.name)?0xFF403C67:0xFF252D3B);
+            g.drawString(font,"*",x+229,y+14,ACCENT,false);
         }
         g.disableScissor();
         if(modules.isEmpty())g.drawString(font,"No modules in this category.",x0+8,124,MUTED,false);
@@ -153,10 +156,10 @@ public final class ClickGuiScreen extends Screen {
         if(hit(x,y,130,82,246,23)){searchFocused=true;return true;}
         List<Module> modules=visibleModules();
         for(int i=0;i<modules.size();i++){
-            Module m=modules.get(i);int bx=130+(i%2)*126,by=116+(i/2)*50-scroll;
-            if(hit(x,y,bx,by,118,43)){
-                if(x>=bx+96)selected=m.name;
-                else{m.toggle();NexusClient.saveConfig();selected=m.name;}
+            Module m=modules.get(i);int bx=130,by=116+i*44-scroll;
+            if(hit(x,y,bx+225,by+8,13,21)){selected=m.name;return true;}
+            if(hit(x,y,bx,by,246,38)){
+                m.toggle();NexusClient.saveConfig();selected=m.name;
                 return true;
             }
         }
@@ -181,7 +184,7 @@ public final class ClickGuiScreen extends Screen {
 
     @Override public boolean mouseScrolled(double mx,double my,double sx,double sy){
         int x=(int)((mx-ox)/scale),y=(int)((my-oy)/scale);
-        if(x>=130&&x<378&&y>=112&&y<H-FOOTER){int rows=(visibleModules().size()+1)/2;int max=Math.max(0,rows*50-214);scroll=Math.max(0,Math.min(max,scroll-(int)(sy*50)));return true;}
+        if(x>=130&&x<376&&y>=112&&y<H-FOOTER){int max=Math.max(0,visibleModules().size()*44-214);scroll=Math.max(0,Math.min(max,scroll-(int)(sy*44)));return true;}
         return super.mouseScrolled(mx,my,sx,sy);
     }
 
