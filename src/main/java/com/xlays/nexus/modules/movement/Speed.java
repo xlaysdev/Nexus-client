@@ -12,6 +12,7 @@ public final class Speed extends Module {
 
     public Speed() {
         super("Speed", Category.MOVEMENT, false);
+        numberSetting("bps","Blocks per second",Speed::getBlocksPerSecond,Speed::setBlocksPerSecond,5,15,.5);
     }
 
     public static double getBlocksPerSecond() {
