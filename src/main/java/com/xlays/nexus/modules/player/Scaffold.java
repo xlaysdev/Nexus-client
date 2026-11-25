@@ -7,6 +7,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import java.lang.reflect.Field;
 public final class Scaffold extends Module {
  private int delay=2,ticks; private boolean placeUnder=true;
  public Scaffold(){super("Scaffold",Category.PLAYER,false);}
@@ -16,11 +17,12 @@ public final class Scaffold extends Module {
   if(++ticks<delay)return;ticks=0;
   BlockPos target=p.blockPosition().below();if(!placeUnder||!mc.level.isEmptyBlock(target))return;
   BlockPos support=target.below();if(mc.level.isEmptyBlock(support)||!mc.level.getBlockState(support).isSolid())return;
-  int old=p.getInventory().getSelectedSlot(),slot=-1;
+  int old=p.getInventory().selected,slot=-1;
   for(int i=0;i<9;i++)if(p.getInventory().getItem(i).getItem() instanceof BlockItem){slot=i;break;}
   if(slot<0)return;
-  p.getInventory().setSelectedSlot(slot);
+  setSelected(p,slot);
   mc.gameMode.useItemOn(p,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(support),Direction.UP,support,false));
-  p.getInventory().setSelectedSlot(old);
+  setSelected(p,old);
  }
+ private void setSelected(net.minecraft.client.player.LocalPlayer p,int slot){try{Field f=p.getInventory().getClass().getDeclaredField("selected");f.setAccessible(true);f.setInt(p.getInventory(),slot);}catch(ReflectiveOperationException|RuntimeException ignored){}}
 }
