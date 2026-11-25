@@ -4,6 +4,7 @@ import com.xlays.nexus.modules.Module;
 import com.xlays.nexus.modules.movement.MovementSettings;
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.BlockESP;
+import com.xlays.nexus.modules.render.ChestESP;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -78,7 +79,6 @@ public final class ClickGuiScreen extends Screen {
         List<Module> modules=visibleModules();
         int rowHeight=50;
         int maxScroll=Math.max(0,((modules.size()+1)/2)*rowHeight-214);scroll=Math.max(0,Math.min(scroll,maxScroll));
-        g.enableScissor((int)(ox+x0*scale),(int)(oy+112*scale),(int)(ox+376*scale),(int)(oy+(H-FOOTER-5)*scale));
         for(int i=0;i<modules.size();i++){
             Module m=modules.get(i);int x=x0+(i%2)*126,y=116+(i/2)*rowHeight-scroll;
             if(y<-rowHeight||y>H-FOOTER-4)continue;
@@ -87,12 +87,11 @@ public final class ClickGuiScreen extends Screen {
             g.fill(x,y,x+118,y+43,on?0xFF1D302D:hovered?HOVER:CARD);
             border(g,x,y,118,43,on?0xFF376D5C:LINE);
             g.fill(x+7,y+8,x+9,y+35,on?GREEN:0xFF485366);
-            g.drawString(font,m.name,x+15,y+8,on?TEXT:MUTED,false);
+            g.drawString(font,fit(m.name,96),x+15,y+8,on?TEXT:MUTED,false);
             g.drawString(font,on?"ENABLED":"DISABLED",x+15,y+25,on?GREEN:MUTED,false);
             g.fill(x+98,y+5,x+113,y+20,selected!=null&&selected.equals(m.name)?0xFF403C67:0xFF252D3B);
             g.drawString(font,"*",x+103,y+8,ACCENT,false);
         }
-        g.disableScissor();
         if(modules.isEmpty())g.drawString(font,"No modules in this category.",x0+8,124,MUTED,false);
 
         int px=390,py=51,pw=256,ph=H-HEADER-FOOTER-13;
@@ -129,6 +128,10 @@ public final class ClickGuiScreen extends Screen {
                 filterRow(g,px+12,232,"Diamond Ore",VisualSettings.scanDiamond);
                 filterRow(g,px+12,260,"Ancient Debris",VisualSettings.scanDebris);
                 filterRow(g,px+12,288,"Chests",VisualSettings.scanChests);
+            }else if("ChestESP".equals(chosen.name)){
+                g.drawString(font,"SCAN RADIUS",px+12,218,TEXT,false);
+                ChestESP chest=(ChestESP)chosen;
+                settingButtons(g,px+pw-72,212,chest.radius()+" blocks");
             }else if("ESP".equals(chosen.name)){
                 g.drawString(font,"BOX STYLE",px+12,218,TEXT,false);
                 settingButtons(g,px+pw-72,212,VisualSettings.esp3d?"3D":"2D");
@@ -193,6 +196,10 @@ public final class ClickGuiScreen extends Screen {
                 if(hit(x,y,filterX,232,54,20)){VisualSettings.scanDiamond=!VisualSettings.scanDiamond;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
                 if(hit(x,y,filterX,260,54,20)){VisualSettings.scanDebris=!VisualSettings.scanDebris;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
                 if(hit(x,y,filterX,288,54,20)){VisualSettings.scanChests=!VisualSettings.scanChests;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
+            }else if("ChestESP".equals(selected)){
+                ChestESP chest=(ChestESP)NexusClient.MODULES.get("ChestESP").orElseThrow();
+                if(hit(x,y,bx,yy,18,19)){chest.radius(chest.radius()-1);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,yy,18,19)){chest.radius(chest.radius()+1);NexusClient.saveConfig();return true;}
             }else if("ESP".equals(selected)){
                 if(hit(x,y,bx,yy,72,19)){VisualSettings.esp3d=!VisualSettings.esp3d;NexusClient.saveConfig();return true;}
             }
@@ -221,6 +228,7 @@ public final class ClickGuiScreen extends Screen {
 
     private void closeGui(){NexusClient.saveConfig();Minecraft.getInstance().setScreen(null);}
     @Override public boolean isPauseScreen(){return false;}
+    private String fit(String value,int maxWidth){String out=value;while(!out.isEmpty()&&font.width(out)>maxWidth)out=out.substring(0,out.length()-1);return out.equals(value)?out:(out.length()>1?out.substring(0,out.length()-1)+"…":"…");}
     private static String pretty(String s){String lower=s.toLowerCase();return Character.toUpperCase(lower.charAt(0))+lower.substring(1);}
     private static String categoryLabel(Module.Category c){return c==Module.Category.RENDER?"Visual":pretty(c.name());}
     private static boolean hit(int a,int b,int x,int y,int w,int h){return a>=x&&a<x+w&&b>=y&&b<y+h;}
