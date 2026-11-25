@@ -72,7 +72,7 @@ public final class NexusConfig {
 
     private static Properties snapshot() {
         Properties p = new Properties();
-        NexusClient.MODULES.all().forEach(f -> p.setProperty("module." + f.name, Boolean.toString(f.enabled)));
+        NexusClient.MODULES.all().forEach(f -> { p.setProperty("module." + f.name, Boolean.toString(f.enabled)); for (var s : f.settings()) p.setProperty("setting." + f.name + "." + s.id, s.value()); });
         p.setProperty("hud.x", Integer.toString(NexusClient.hudX));
         p.setProperty("hud.y", Integer.toString(NexusClient.hudY));
         p.setProperty("hud.scale", Integer.toString(NexusClient.hudScale));
@@ -121,8 +121,7 @@ public final class NexusConfig {
         Properties p = new Properties();
         try (InputStream in = Files.newInputStream(path)) {
             p.load(in);
-            NexusClient.MODULES.all().forEach(f ->
-                f.setEnabled(Boolean.parseBoolean(p.getProperty("module." + f.name, Boolean.toString(f.enabled)))));
+            NexusClient.MODULES.all().forEach(f -> { f.setEnabled(Boolean.parseBoolean(p.getProperty("module." + f.name, Boolean.toString(f.enabled)))); for (var s : f.settings()) { String value=p.getProperty("setting." + f.name + "." + s.id); if(value!=null)s.load(value); } });
             NexusClient.hudX = clamp(parse(p, "hud.x", NexusClient.hudX), 0, 10000);
             NexusClient.hudY = clamp(parse(p, "hud.y", NexusClient.hudY), 0, 10000);
             NexusClient.hudScale = clamp(parse(p, "hud.scale", NexusClient.hudScale), 75, 150);
