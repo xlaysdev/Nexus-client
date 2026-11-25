@@ -51,6 +51,10 @@ import com.xlays.nexus.modules.render.NoHurtCam;
 import com.xlays.nexus.modules.render.PlayerESP;
 import com.xlays.nexus.modules.render.EntityHighlight;
 import com.xlays.nexus.modules.render.ChestESP;
+import com.xlays.nexus.modules.render.Tracers;
+import com.xlays.nexus.modules.render.CombatHUD;
+import com.xlays.nexus.modules.render.CriticalHUD;
+import com.xlays.nexus.modules.render.RainbowHUD;
 import com.xlays.nexus.modules.player.FastBreak;
 import com.xlays.nexus.modules.player.Scaffold;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -126,6 +130,10 @@ public final class NexusClient {
         MODULES.register(new PlayerESP());
         MODULES.register(new EntityHighlight());
         MODULES.register(new ChestESP());
+        MODULES.register(new Tracers());
+        MODULES.register(new CombatHUD());
+        MODULES.register(new CriticalHUD());
+        MODULES.register(new RainbowHUD());
     }
 
     private static void add(String name, String category, boolean enabled) {
