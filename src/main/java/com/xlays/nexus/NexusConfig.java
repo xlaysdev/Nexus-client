@@ -2,6 +2,7 @@ package com.xlays.nexus;
 
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.OreESP;
+import com.xlays.nexus.modules.render.ChestESP;
 
 import net.neoforged.fml.loading.FMLPaths;
 
@@ -87,6 +88,7 @@ public final class NexusConfig {
         p.setProperty("visual.scanDebris", Boolean.toString(VisualSettings.scanDebris));
         p.setProperty("visual.scanChests", Boolean.toString(VisualSettings.scanChests));
         p.setProperty("ore.radius", Integer.toString(OreESP.getRadius()));
+        NexusClient.MODULES.get("ChestESP").filter(ChestESP.class::isInstance).map(ChestESP.class::cast).ifPresent(m -> p.setProperty("chest.radius", Integer.toString(m.radius())));
         for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
             p.setProperty("ore." + group.name(), Boolean.toString(OreESP.isEnabled(group)));
         }
@@ -130,6 +132,7 @@ public final class NexusConfig {
             VisualSettings.scanDebris = Boolean.parseBoolean(p.getProperty("visual.scanDebris", Boolean.toString(VisualSettings.scanDebris)));
             VisualSettings.scanChests = Boolean.parseBoolean(p.getProperty("visual.scanChests", Boolean.toString(VisualSettings.scanChests)));
             OreESP.setRadius(clamp(parse(p, "ore.radius", OreESP.getRadius()), 4, 32));
+            NexusClient.MODULES.get("ChestESP").filter(ChestESP.class::isInstance).map(ChestESP.class::cast).ifPresent(m -> m.radius(clamp(parse(p, "chest.radius", m.radius()), 4, 48)));
             for (OreESP.OreGroup group : OreESP.OreGroup.values()) {
                 OreESP.setEnabled(group, Boolean.parseBoolean(p.getProperty("ore." + group.name(), Boolean.toString(OreESP.isEnabled(group)))));
             }
