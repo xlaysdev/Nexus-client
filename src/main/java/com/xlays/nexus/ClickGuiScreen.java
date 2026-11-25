@@ -114,41 +114,19 @@ public final class ClickGuiScreen extends Screen {
             g.drawString(font,"STATE",px+12,169,MUTED,false);
             g.drawString(font,on?"Enabled":"Disabled",px+12,185,on?GREEN:MUTED,false);
             g.fill(px+12,204,px+pw-12,205,LINE);
-            if("Speed".equals(chosen.name)){
-                g.drawString(font,"BLOCKS PER SECOND",px+12,218,TEXT,false);
-                settingButtons(g,px+pw-72,212,String.format("%.1f B/s",Speed.getBlocksPerSecond()));
-                g.drawString(font,"Copied from C00lgui's movement model.",px+12,246,MUTED,false);
-            }else if("CrystalAura".equals(chosen.name)){
-                g.drawString(font,"TARGET RANGE",px+12,218,TEXT,false);
-                settingButtons(g,px+pw-72,212,String.format("%.1f",CrystalAura.targetRange));
-                g.drawString(font,"PLACEMENT RANGE",px+12,246,TEXT,false);
-                settingButtons(g,px+pw-72,240,String.format("%.2f",CrystalAura.placeRange));
-                g.drawString(font,"ACTION DELAY (MS)",px+12,274,TEXT,false);
-                settingButtons(g,px+pw-72,268,CrystalAura.actionDelayMs+"");
-                filterRow(g,px+12,300,"Hostile mobs",CrystalAura.targetHostiles);
-                filterRow(g,px+12,326,"Players",CrystalAura.targetPlayers);
-                g.drawString(font,"No camera rotation required.",px+12,358,MUTED,false);
-            }else if("Fly".equals(chosen.name)){
-                g.drawString(font,"VERTICAL SPEED",px+12,218,TEXT,false);
-                settingButtons(g,px+pw-72,212,String.format("%.2f",MovementSettings.verticalSpeed));
-            }else if("Velocity".equals(chosen.name)){
-                g.drawString(font,"KNOCKBACK SCALE",px+12,218,TEXT,false);
-                settingButtons(g,px+pw-72,212,String.format("%.1fx",MovementSettings.velocityScale));
-            }else if("BlockESP".equals(chosen.name)){
-                g.drawString(font,"BLOCK FILTERS",px+12,218,TEXT,false);
-                filterRow(g,px+12,232,"Diamond Ore",VisualSettings.scanDiamond);
-                filterRow(g,px+12,260,"Ancient Debris",VisualSettings.scanDebris);
-                filterRow(g,px+12,288,"Chests",VisualSettings.scanChests);
-            }else if("ChestESP".equals(chosen.name)){
-                g.drawString(font,"SCAN RADIUS",px+12,218,TEXT,false);
-                ChestESP chest=(ChestESP)chosen;
-                settingButtons(g,px+pw-72,212,chest.radius()+" blocks");
-            }else if("ESP".equals(chosen.name)){
-                g.drawString(font,"BOX STYLE",px+12,218,TEXT,false);
-                settingButtons(g,px+pw-72,212,VisualSettings.esp3d?"3D":"2D");
+            if(chosen.settings().isEmpty()){
+                g.drawString(font,"No extra settings for this module.",px+12,224,MUTED,false);
             }else{
-                g.drawString(font,"No extra settings exposed",px+12,224,MUTED,false);
-                g.drawString(font,"for this module yet.",px+12,240,MUTED,false);
+                int sy=218;
+                for(var setting:chosen.settings()){
+                    if(sy>H-FOOTER-64)break;
+                    g.drawString(font,fit(setting.label,126),px+12,sy+6,TEXT,false);
+                    if(setting.booleanType){
+                        boolean value=setting.bool();g.fill(px+pw-66,sy,px+pw-12,sy+20,value?0xFF245541:0xFF303846);
+                        g.drawString(font,value?"ON":"OFF",px+pw-50,sy+6,value?GREEN:MUTED,false);
+                    }else settingButtons(g,px+pw-84,sy,String.format("%.2f",setting.number()));
+                    sy+=29;
+                }
             }
             g.drawString(font,"Changes apply immediately.",px+12,H-FOOTER-40,MUTED,false);
         }
@@ -191,37 +169,27 @@ public final class ClickGuiScreen extends Screen {
             }
         }
         if(selected!=null){
-            int px=540,yy=212,bx=px+244-72;
+            Module chosen=NexusClient.MODULES.get(selected).orElse(null);
+            if(chosen!=null){
+                int sy=218;
+                for(var setting:chosen.settings()){
+                    if(setting.booleanType){
+                        if(hit(x,y,540+244-66,sy,54,20)){setting.toggle();NexusClient.saveConfig();return true;}
+                    }else{
+                        if(hit(x,y,540+244-84,sy,18,20)){setting.adjust(-1);NexusClient.saveConfig();return true;}
+                        if(hit(x,y,540+244-30,sy,18,20)){setting.adjust(1);NexusClient.saveConfig();return true;}
+                    }
+                    sy+=29;
+                }
+                if(chosen.settings().size()>0)return true;
+            }
+            int bx=540+244-72;
             if("Speed".equals(selected)){
-                if(hit(x,y,bx,yy,18,19)){Speed.setBlocksPerSecond(Speed.getBlocksPerSecond()-.5);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,yy,18,19)){Speed.setBlocksPerSecond(Speed.getBlocksPerSecond()+.5);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx,212,18,19)){Speed.setBlocksPerSecond(Speed.getBlocksPerSecond()-.5);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,212,18,19)){Speed.setBlocksPerSecond(Speed.getBlocksPerSecond()+.5);NexusClient.saveConfig();return true;}
             }else if("CrystalAura".equals(selected)){
                 if(hit(x,y,bx,212,18,19)){CrystalAura.targetRange=Math.max(4.0,CrystalAura.targetRange-.5);NexusClient.saveConfig();return true;}
                 if(hit(x,y,bx+54,212,18,19)){CrystalAura.targetRange=Math.min(24.0,CrystalAura.targetRange+.5);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx,240,18,19)){CrystalAura.placeRange=Math.max(3.0,CrystalAura.placeRange-.25);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,240,18,19)){CrystalAura.placeRange=Math.min(6.0,CrystalAura.placeRange+.25);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx,268,18,19)){CrystalAura.actionDelayMs=Math.max(50,CrystalAura.actionDelayMs-25);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,268,18,19)){CrystalAura.actionDelayMs=Math.min(1000,CrystalAura.actionDelayMs+25);NexusClient.saveConfig();return true;}
-                int filterX=px+12+178;
-                if(hit(x,y,filterX,300,54,20)){CrystalAura.targetHostiles=!CrystalAura.targetHostiles;NexusClient.saveConfig();return true;}
-                if(hit(x,y,filterX,326,54,20)){CrystalAura.targetPlayers=!CrystalAura.targetPlayers;NexusClient.saveConfig();return true;}
-            }else if("Fly".equals(selected)){
-                if(hit(x,y,bx,yy,18,19)){MovementSettings.verticalSpeed=Math.max(.1F,MovementSettings.verticalSpeed-.05F);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,yy,18,19)){MovementSettings.verticalSpeed=Math.min(1.5F,MovementSettings.verticalSpeed+.05F);NexusClient.saveConfig();return true;}
-            }else if("Velocity".equals(selected)){
-                if(hit(x,y,bx,yy,18,19)){MovementSettings.velocityScale=Math.max(0F,MovementSettings.velocityScale-.1F);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,yy,18,19)){MovementSettings.velocityScale=Math.min(1F,MovementSettings.velocityScale+.1F);NexusClient.saveConfig();return true;}
-            }else if("BlockESP".equals(selected)){
-                int filterX=px+12+178;
-                if(hit(x,y,filterX,232,54,20)){VisualSettings.scanDiamond=!VisualSettings.scanDiamond;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
-                if(hit(x,y,filterX,260,54,20)){VisualSettings.scanDebris=!VisualSettings.scanDebris;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
-                if(hit(x,y,filterX,288,54,20)){VisualSettings.scanChests=!VisualSettings.scanChests;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
-            }else if("ChestESP".equals(selected)){
-                ChestESP chest=(ChestESP)NexusClient.MODULES.get("ChestESP").orElseThrow();
-                if(hit(x,y,bx,yy,18,19)){chest.radius(chest.radius()-1);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,yy,18,19)){chest.radius(chest.radius()+1);NexusClient.saveConfig();return true;}
-            }else if("ESP".equals(selected)){
-                if(hit(x,y,bx,yy,72,19)){VisualSettings.esp3d=!VisualSettings.esp3d;NexusClient.saveConfig();return true;}
             }
         }
         return true;
