@@ -26,7 +26,9 @@ public final class NexusConfig {
     private NexusConfig() {}
 
     public static void load() {
-        read(ROOT.resolve("settings.properties"));
+        // Startup is intentionally safe: never restore enabled module states from disk.
+        // Settings and HUD preferences still load normally.
+        read(ROOT.resolve("settings.properties"), false);
     }
 
     public static void save() {
@@ -56,7 +58,7 @@ public final class NexusConfig {
         if (!SAFE_NAME.matcher(name).matches()) return false;
         Path path = PROFILES.resolve(name + ".properties");
         if (!Files.isRegularFile(path)) return false;
-        read(path);
+        read(path, true);
         save();
         return true;
     }
@@ -116,12 +118,12 @@ public final class NexusConfig {
         }
     }
 
-    private static void read(Path path) {
+    private static void read(Path path, boolean restoreModuleStates) {
         if (!Files.isRegularFile(path)) return;
         Properties p = new Properties();
         try (InputStream in = Files.newInputStream(path)) {
             p.load(in);
-            NexusClient.MODULES.all().forEach(f -> { f.setEnabled(Boolean.parseBoolean(p.getProperty("module." + f.name, Boolean.toString(f.enabled)))); for (var s : f.settings()) { String value=p.getProperty("setting." + f.name + "." + s.id); if(value!=null)s.load(value); } });
+            NexusClient.MODULES.all().forEach(f -> { if (restoreModuleStates) f.setEnabled(Boolean.parseBoolean(p.getProperty("module." + f.name, "false"))); else f.setEnabled(false); for (var s : f.settings()) { String value=p.getProperty("setting." + f.name + "." + s.id); if(value!=null)s.load(value); } });
             NexusClient.hudX = clamp(parse(p, "hud.x", NexusClient.hudX), 0, 10000);
             NexusClient.hudY = clamp(parse(p, "hud.y", NexusClient.hudY), 0, 10000);
             NexusClient.hudScale = clamp(parse(p, "hud.scale", NexusClient.hudScale), 75, 150);
