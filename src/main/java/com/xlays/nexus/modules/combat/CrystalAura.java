@@ -32,7 +32,10 @@ public final class CrystalAura extends Module {
     public static int actionDelayMs = 150;
     public static double explosionRange = 6.0;
 
-    private long lastAction;\n    private int originalSelectedSlot = -1;\n    private int autoSelectedSlot = -1;\n    private int swappedInventorySlot = -1;
+    private long lastAction;
+    private int originalSelectedSlot = -1;
+    private int autoSelectedSlot = -1;
+    private int swappedInventorySlot = -1;
 
     public CrystalAura() {
         super("CrystalAura", Category.COMBAT, false);
