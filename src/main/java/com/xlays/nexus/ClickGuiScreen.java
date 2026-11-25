@@ -1,7 +1,7 @@
 package com.xlays.nexus;
 
 import com.xlays.nexus.modules.Module;
-import com.xlays.nexus.modules.movement.MovementSettings;
+import com.xlays.nexus.modules.movement.MovementSettings;\nimport com.xlays.nexus.modules.movement.Speed;\nimport com.xlays.nexus.modules.combat.CrystalAura;
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.BlockESP;
 import com.xlays.nexus.modules.render.ChestESP;
@@ -113,10 +113,19 @@ public final class ClickGuiScreen extends Screen {
             g.drawString(font,on?"Enabled":"Disabled",px+12,185,on?GREEN:MUTED,false);
             g.fill(px+12,204,px+pw-12,205,LINE);
             if("Speed".equals(chosen.name)){
-                g.drawString(font,"SPEED MULTIPLIER",px+12,218,TEXT,false);
-                settingButtons(g,px+pw-72,212,String.format("%.2fx",MovementSettings.speedMultiplier));
-                g.drawString(font,"MODE",px+12,246,TEXT,false);
-                settingButtons(g,px+pw-72,240,MovementSettings.speedMode);
+                g.drawString(font,"BLOCKS PER SECOND",px+12,218,TEXT,false);
+                settingButtons(g,px+pw-72,212,String.format("%.1f B/s",Speed.getBlocksPerSecond()));
+                g.drawString(font,"Copied from C00lgui's movement model.",px+12,246,MUTED,false);
+            }else if("CrystalAura".equals(chosen.name)){
+                g.drawString(font,"TARGET RANGE",px+12,218,TEXT,false);
+                settingButtons(g,px+pw-72,212,String.format("%.1f",CrystalAura.targetRange));
+                g.drawString(font,"PLACEMENT RANGE",px+12,246,TEXT,false);
+                settingButtons(g,px+pw-72,240,String.format("%.2f",CrystalAura.placeRange));
+                g.drawString(font,"ACTION DELAY (MS)",px+12,274,TEXT,false);
+                settingButtons(g,px+pw-72,268,CrystalAura.actionDelayMs+"");
+                filterRow(g,px+12,300,"Hostile mobs",CrystalAura.targetHostiles);
+                filterRow(g,px+12,326,"Players",CrystalAura.targetPlayers);
+                g.drawString(font,"No camera rotation required.",px+12,358,MUTED,false);
             }else if("Fly".equals(chosen.name)){
                 g.drawString(font,"VERTICAL SPEED",px+12,218,TEXT,false);
                 settingButtons(g,px+pw-72,212,String.format("%.2f",MovementSettings.verticalSpeed));
@@ -182,9 +191,18 @@ public final class ClickGuiScreen extends Screen {
         if(selected!=null){
             int px=540,yy=212,bx=px+244-72;
             if("Speed".equals(selected)){
-                if(hit(x,y,bx,yy,18,19)){MovementSettings.speedMultiplier=Math.max(1F,MovementSettings.speedMultiplier-.1F);NexusClient.saveConfig();return true;}
-                if(hit(x,y,bx+54,yy,18,19)){MovementSettings.speedMultiplier=Math.min(3F,MovementSettings.speedMultiplier+.1F);NexusClient.saveConfig();return true;}
-                if(hit(x,y,px+12,240,232,19)){MovementSettings.speedMode=switch(MovementSettings.speedMode){case "Normal"->"Bhop";case "Bhop"->"Timer";default->"Normal";};NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx,yy,18,19)){Speed.setBlocksPerSecond(Speed.getBlocksPerSecond()-.5);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,yy,18,19)){Speed.setBlocksPerSecond(Speed.getBlocksPerSecond()+.5);NexusClient.saveConfig();return true;}
+            }else if("CrystalAura".equals(selected)){
+                if(hit(x,y,bx,212,18,19)){CrystalAura.targetRange=Math.max(4.0,CrystalAura.targetRange-.5);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,212,18,19)){CrystalAura.targetRange=Math.min(24.0,CrystalAura.targetRange+.5);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx,240,18,19)){CrystalAura.placeRange=Math.max(3.0,CrystalAura.placeRange-.25);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,240,18,19)){CrystalAura.placeRange=Math.min(6.0,CrystalAura.placeRange+.25);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx,268,18,19)){CrystalAura.actionDelayMs=Math.max(50,CrystalAura.actionDelayMs-25);NexusClient.saveConfig();return true;}
+                if(hit(x,y,bx+54,268,18,19)){CrystalAura.actionDelayMs=Math.min(1000,CrystalAura.actionDelayMs+25);NexusClient.saveConfig();return true;}
+                int filterX=px+12+178;
+                if(hit(x,y,filterX,300,54,20)){CrystalAura.targetHostiles=!CrystalAura.targetHostiles;NexusClient.saveConfig();return true;}
+                if(hit(x,y,filterX,326,54,20)){CrystalAura.targetPlayers=!CrystalAura.targetPlayers;NexusClient.saveConfig();return true;}
             }else if("Fly".equals(selected)){
                 if(hit(x,y,bx,yy,18,19)){MovementSettings.verticalSpeed=Math.max(.1F,MovementSettings.verticalSpeed-.05F);NexusClient.saveConfig();return true;}
                 if(hit(x,y,bx+54,yy,18,19)){MovementSettings.verticalSpeed=Math.min(1.5F,MovementSettings.verticalSpeed+.05F);NexusClient.saveConfig();return true;}
