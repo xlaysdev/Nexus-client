@@ -155,7 +155,8 @@ public final class CrystalAura extends Module {
         if (mc.player.getOffhandItem().is(Items.END_CRYSTAL)) return InteractionHand.OFF_HAND;
 
         var inventory = mc.player.getInventory();
-        int selected = inventory.selected;
+        int selected = selectedSlot(inventory);
+        if (originalSelectedSlot < 0) originalSelectedSlot = selected;
         if (inventory.getItem(selected).is(Items.END_CRYSTAL)) {
             autoSelectedSlot = selected;
             return InteractionHand.MAIN_HAND;
@@ -163,7 +164,7 @@ public final class CrystalAura extends Module {
 
         for (int slot = 0; slot < 9; slot++) {
             if (!inventory.getItem(slot).is(Items.END_CRYSTAL)) continue;
-            inventory.selected = slot;
+            setSelectedSlot(inventory, slot);
             autoSelectedSlot = slot;
             return InteractionHand.MAIN_HAND;
         }
@@ -185,6 +186,16 @@ public final class CrystalAura extends Module {
         return null;
     }
 
+    private static int selectedSlot(net.minecraft.world.entity.player.Inventory inventory) {
+        try { var f=inventory.getClass().getDeclaredField("selected"); f.setAccessible(true); return f.getInt(inventory); }
+        catch (ReflectiveOperationException | RuntimeException ignored) { return 0; }
+    }
+
+    private static void setSelectedSlot(net.minecraft.world.entity.player.Inventory inventory,int slot) {
+        try { var f=inventory.getClass().getDeclaredField("selected"); f.setAccessible(true); f.setInt(inventory,slot); }
+        catch (ReflectiveOperationException | RuntimeException ignored) { }
+    }
+
     @Override
     protected void onDisable() {
         Minecraft mc = Minecraft.getInstance();
@@ -201,8 +212,8 @@ public final class CrystalAura extends Module {
                 );
             }
             if (originalSelectedSlot >= 0 && autoSelectedSlot >= 0
-                    && inventory.selected == autoSelectedSlot) {
-                inventory.selected = originalSelectedSlot;
+                    && selectedSlot(inventory) == autoSelectedSlot) {
+                setSelectedSlot(inventory, originalSelectedSlot);
             }
         }
         lastAction = 0L;
