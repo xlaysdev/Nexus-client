@@ -11,7 +11,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 @EventBusSubscriber(modid=NexusClient.MOD_ID,value=Dist.CLIENT)
 public final class CombatHUD extends Module {
- public CombatHUD(){super("CombatHUD",Category.RENDER,false);}
+ public CombatHUD(){super("CombatHUD",Category.COMBAT,false);}
  @SubscribeEvent public static void renderHud(RenderGuiEvent.Post e){
   var mc=Minecraft.getInstance();if(!NexusClient.enabled("CombatHUD")||mc.player==null||mc.options.hideGui||mc.screen!=null)return;
   GuiGraphics g=e.getGuiGraphics();int x=8,y=28;
