@@ -1,7 +1,9 @@
 package com.xlays.nexus;
 
 import com.xlays.nexus.modules.Module;
-import com.xlays.nexus.modules.movement.MovementSettings;\nimport com.xlays.nexus.modules.movement.Speed;\nimport com.xlays.nexus.modules.combat.CrystalAura;
+import com.xlays.nexus.modules.movement.MovementSettings;
+import com.xlays.nexus.modules.movement.Speed;
+import com.xlays.nexus.modules.combat.CrystalAura;
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.BlockESP;
 import com.xlays.nexus.modules.render.ChestESP;
