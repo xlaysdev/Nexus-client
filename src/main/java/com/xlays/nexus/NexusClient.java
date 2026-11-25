@@ -21,6 +21,8 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 import com.xlays.nexus.modules.combat.KillAura;
+import com.xlays.nexus.modules.combat.AimAssist;
+import com.xlays.nexus.modules.combat.AutoCritical;
 import com.xlays.nexus.modules.combat.AutoTotem;
 import com.xlays.nexus.modules.combat.OffhandManager;
 import com.xlays.nexus.modules.combat.AutoArmor;
@@ -38,12 +40,21 @@ import com.xlays.nexus.modules.movement.Step;
 import com.xlays.nexus.modules.movement.Safewalk;
 import com.xlays.nexus.modules.movement.InventoryMove;
 import com.xlays.nexus.modules.movement.FastPlace;
+import com.xlays.nexus.modules.movement.AirJump;
+import com.xlays.nexus.modules.movement.Jesus;
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.ESP;
 import com.xlays.nexus.modules.render.BlockESP;
 import com.xlays.nexus.modules.render.OreESP;
 import com.xlays.nexus.modules.render.Fullbright;
 import com.xlays.nexus.modules.render.NoHurtCam;
+import com.xlays.nexus.modules.render.PlayerESP;
+import com.xlays.nexus.modules.render.EntityHighlight;
+import com.xlays.nexus.modules.render.ChestESP;
+import com.xlays.nexus.modules.player.FastBreak;
+import com.xlays.nexus.modules.player.Scaffold;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import com.xlays.nexus.modules.Module;
 import com.xlays.nexus.modules.ModuleManager;
 
@@ -77,6 +88,8 @@ public final class NexusClient {
         NeoForge.EVENT_BUS.addListener(Velocity::onKnockback);
         NeoForge.EVENT_BUS.addListener(ESP::onWorldRender);
         NeoForge.EVENT_BUS.addListener(BlockESP::onWorldRender);
+        NeoForge.EVENT_BUS.addListener(this::onWorldRender);
+        NeoForge.EVENT_BUS.addListener(this::onBreakSpeed);
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) { event.register(OPEN_GUI); }
@@ -90,6 +103,8 @@ public final class NexusClient {
         MODULES.register(new AutoArmor());
         MODULES.register(new OffhandManager());
         MODULES.register(new Reach());
+        MODULES.register(new AimAssist());
+        MODULES.register(new AutoCritical());
         MODULES.register(new Speed());
         MODULES.register(new Fly());
         MODULES.register(new NoFall());
@@ -99,15 +114,28 @@ public final class NexusClient {
         MODULES.register(new Safewalk());
         MODULES.register(new InventoryMove());
         MODULES.register(new FastPlace());
+        MODULES.register(new AirJump());
+        MODULES.register(new Jesus());
+        MODULES.register(new FastBreak());
+        MODULES.register(new Scaffold());
         MODULES.register(new ESP());
         MODULES.register(new BlockESP());
         MODULES.register(new OreESP());
         MODULES.register(new Fullbright());
         MODULES.register(new NoHurtCam());
+        MODULES.register(new PlayerESP());
+        MODULES.register(new EntityHighlight());
+        MODULES.register(new ChestESP());
     }
 
     private static void add(String name, String category, boolean enabled) {
         MODULES.register(new Module(name, Module.Category.valueOf(category.toUpperCase(java.util.Locale.ROOT)), enabled) {});
+    }
+
+    private void onWorldRender(RenderLevelStageEvent.AfterEntities event) { MODULES.render(); }
+
+    private void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        MODULES.get("FastBreak").filter(FastBreak.class::isInstance).map(FastBreak.class::cast).ifPresent(m -> m.onBreakSpeed(event));
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
