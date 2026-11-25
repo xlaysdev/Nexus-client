@@ -43,4 +43,8 @@ public final class ModuleManager {
     public void tick() {
         for (Module module : modules.values()) if (module.enabled) module.onTick();
     }
+
+    public void render() {
+        for (Module module : modules.values()) if (module.enabled) module.onRender();
+    }
 }
