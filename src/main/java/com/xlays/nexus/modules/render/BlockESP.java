@@ -27,6 +27,11 @@ public final class BlockESP extends Module {
 
     public BlockESP() { super("BlockESP", Category.RENDER, false); }
 
+    public static void refreshFilters() {
+        FOUND.clear();
+        scanTicks = 9;
+    }
+
     @Override
     public void onTick() {
         if (Minecraft.getInstance().player == null || Minecraft.getInstance().level == null) {
@@ -45,9 +50,12 @@ public final class BlockESP extends Module {
                 center.offset(SCAN_MAX, SCAN_MAX, SCAN_MAX))) {
             if (!mc.level.hasChunkAt(pos)) continue;
             var block = mc.level.getBlockState(pos).getBlock();
-            if (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE
-                    || block == Blocks.ANCIENT_DEBRIS || block == Blocks.CHEST
-                    || block == Blocks.TRAPPED_CHEST || block == Blocks.ENDER_CHEST) {
+            boolean diamond = VisualSettings.scanDiamond
+                    && (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE);
+            boolean debris = VisualSettings.scanDebris && block == Blocks.ANCIENT_DEBRIS;
+            boolean chest = VisualSettings.scanChests
+                    && (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST || block == Blocks.ENDER_CHEST);
+            if (diamond || debris || chest) {
                 next.add(pos.immutable());
                 if (next.size() >= MAX_MARKERS) break;
             }
