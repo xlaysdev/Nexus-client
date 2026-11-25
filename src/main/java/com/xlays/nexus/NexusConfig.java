@@ -2,7 +2,9 @@ package com.xlays.nexus;
 
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.OreESP;
-import com.xlays.nexus.modules.render.ChestESP;\nimport com.xlays.nexus.modules.combat.CrystalAura;\nimport com.xlays.nexus.modules.movement.Speed;
+import com.xlays.nexus.modules.render.ChestESP;
+import com.xlays.nexus.modules.combat.CrystalAura;
+import com.xlays.nexus.modules.movement.Speed;
 
 import net.neoforged.fml.loading.FMLPaths;
 
