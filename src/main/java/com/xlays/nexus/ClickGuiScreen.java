@@ -3,6 +3,7 @@ package com.xlays.nexus;
 import com.xlays.nexus.modules.Module;
 import com.xlays.nexus.modules.movement.MovementSettings;
 import com.xlays.nexus.modules.render.VisualSettings;
+import com.xlays.nexus.modules.render.BlockESP;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -125,7 +126,12 @@ public final class ClickGuiScreen extends Screen {
             }else if("Velocity".equals(chosen.name)){
                 g.drawString(font,"KNOCKBACK SCALE",px+12,218,TEXT,false);
                 settingButtons(g,px+pw-72,212,String.format("%.1fx",MovementSettings.velocityScale));
-            }else if("ESP".equals(chosen.name)||"BlockESP".equals(chosen.name)){
+            }else if("BlockESP".equals(chosen.name)){
+                g.drawString(font,"BLOCK FILTERS",px+12,218,TEXT,false);
+                filterRow(g,px+12,232,"Diamond Ore",VisualSettings.scanDiamond);
+                filterRow(g,px+12,260,"Ancient Debris",VisualSettings.scanDebris);
+                filterRow(g,px+12,288,"Chests",VisualSettings.scanChests);
+            }else if("ESP".equals(chosen.name)){
                 g.drawString(font,"BOX STYLE",px+12,218,TEXT,false);
                 settingButtons(g,px+pw-72,212,VisualSettings.esp3d?"3D":"2D");
             }else{
@@ -139,6 +145,15 @@ public final class ClickGuiScreen extends Screen {
         g.drawString(font,NexusClient.MODULES.all().stream().filter(m->m.enabled).count()+" ACTIVE",W-86,H-14,GREEN,false);
         g.pose().popMatrix();super.render(g,mx,my,partialTick);
     }
+
+    private void filterRow(GuiGraphics g,int x,int y,String label,boolean enabled){
+        g.drawString(font,label,x,y+7,enabled?TEXT:MUTED,false);
+        int bx=x+pwDummy();
+        g.fill(bx,y,bx+54,y+20,enabled?0xFF245541:0xFF303846);
+        g.drawString(font,enabled?"ON":"OFF",bx+15,y+6,enabled?GREEN:MUTED,false);
+    }
+
+    private int pwDummy(){return 178;}
 
     private void settingButtons(GuiGraphics g,int x,int y,String value){
         g.fill(x,y,x+18,y+19,0xFF303846);g.fill(x+54,y,x+72,y+19,0xFF303846);
@@ -175,7 +190,12 @@ public final class ClickGuiScreen extends Screen {
             }else if("Velocity".equals(selected)){
                 if(hit(x,y,bx,yy,18,19)){MovementSettings.velocityScale=Math.max(0F,MovementSettings.velocityScale-.1F);NexusClient.saveConfig();return true;}
                 if(hit(x,y,bx+54,yy,18,19)){MovementSettings.velocityScale=Math.min(1F,MovementSettings.velocityScale+.1F);NexusClient.saveConfig();return true;}
-            }else if("ESP".equals(selected)||"BlockESP".equals(selected)){
+            }else if("BlockESP".equals(selected)){
+                int filterX=px+12+178;
+                if(hit(x,y,filterX,232,54,20)){VisualSettings.scanDiamond=!VisualSettings.scanDiamond;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
+                if(hit(x,y,filterX,260,54,20)){VisualSettings.scanDebris=!VisualSettings.scanDebris;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
+                if(hit(x,y,filterX,288,54,20)){VisualSettings.scanChests=!VisualSettings.scanChests;BlockESP.refreshFilters();NexusClient.saveConfig();return true;}
+            }else if("ESP".equals(selected)){
                 if(hit(x,y,bx,yy,72,19)){VisualSettings.esp3d=!VisualSettings.esp3d;NexusClient.saveConfig();return true;}
             }
         }
