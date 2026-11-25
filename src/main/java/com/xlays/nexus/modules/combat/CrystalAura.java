@@ -10,7 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Items;\nimport net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,7 +31,7 @@ public final class CrystalAura extends Module {
     public static int actionDelayMs = 150;
     public static double explosionRange = 6.0;
 
-    private long lastAction;
+    private long lastAction;\n    private int originalSelectedSlot = -1;\n    private int autoSelectedSlot = -1;\n    private int swappedInventorySlot = -1;
 
     public CrystalAura() {
         super("CrystalAura", Category.COMBAT, false);
@@ -73,10 +73,7 @@ public final class CrystalAura extends Module {
             return;
         }
 
-        InteractionHand hand = mc.player.getMainHandItem().is(Items.END_CRYSTAL)
-                ? InteractionHand.MAIN_HAND
-                : mc.player.getOffhandItem().is(Items.END_CRYSTAL)
-                    ? InteractionHand.OFF_HAND : null;
+        InteractionHand hand = findCrystalHand(mc);
         if (hand == null) return;
 
         BlockPos support = findPlacement(mc, target);
@@ -144,8 +141,63 @@ public final class CrystalAura extends Module {
         return best;
     }
 
+    private InteractionHand findCrystalHand(Minecraft mc) {
+        if (mc.player.getOffhandItem().is(Items.END_CRYSTAL)) return InteractionHand.OFF_HAND;
+
+        var inventory = mc.player.getInventory();
+        int selected = inventory.selected;
+        if (inventory.getItem(selected).is(Items.END_CRYSTAL)) {
+            autoSelectedSlot = selected;
+            return InteractionHand.MAIN_HAND;
+        }
+
+        for (int slot = 0; slot < 9; slot++) {
+            if (!inventory.getItem(slot).is(Items.END_CRYSTAL)) continue;
+            inventory.selected = slot;
+            autoSelectedSlot = slot;
+            return InteractionHand.MAIN_HAND;
+        }
+
+        // If crystals are in the main inventory, swap one into the selected hotbar slot.
+        for (int slot = 9; slot < 36; slot++) {
+            if (!inventory.getItem(slot).is(Items.END_CRYSTAL)) continue;
+            mc.gameMode.handleInventoryMouseClick(
+                    mc.player.inventoryMenu.containerId,
+                    slot,
+                    selected,
+                    ClickType.SWAP,
+                    mc.player
+            );
+            autoSelectedSlot = selected;
+            swappedInventorySlot = slot;
+            return InteractionHand.MAIN_HAND;
+        }
+        return null;
+    }
+
     @Override
     protected void onDisable() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.gameMode != null) {
+            var inventory = mc.player.getInventory();
+            if (swappedInventorySlot >= 9 && autoSelectedSlot >= 0
+                    && inventory.getItem(autoSelectedSlot).is(Items.END_CRYSTAL)) {
+                mc.gameMode.handleInventoryMouseClick(
+                        mc.player.inventoryMenu.containerId,
+                        swappedInventorySlot,
+                        autoSelectedSlot,
+                        ClickType.SWAP,
+                        mc.player
+                );
+            }
+            if (originalSelectedSlot >= 0 && autoSelectedSlot >= 0
+                    && inventory.selected == autoSelectedSlot) {
+                inventory.selected = originalSelectedSlot;
+            }
+        }
         lastAction = 0L;
+        originalSelectedSlot = -1;
+        autoSelectedSlot = -1;
+        swappedInventorySlot = -1;
     }
 }
