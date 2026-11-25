@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 public final class ChestESP extends Module {
  private int radius=12,tick; private final List<BlockPos> found=new ArrayList<>();
- public ChestESP(){super("ChestESP",Category.RENDER,false);}
+ public ChestESP(){super("ChestESP",Category.RENDER,false);numberSetting("radius","Scan radius",()->radius,v->radius(v.intValue()),4,48,1);}
  public int radius(){return radius;} public void radius(int v){radius=Math.max(4,Math.min(48,v));tick=9;found.clear();}
  @Override public void onTick(){
   var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null){found.clear();return;}
