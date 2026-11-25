@@ -17,12 +17,13 @@ public final class Scaffold extends Module {
   if(++ticks<delay)return;ticks=0;
   BlockPos target=p.blockPosition().below();if(!placeUnder||!mc.level.isEmptyBlock(target))return;
   BlockPos support=target.below();if(mc.level.isEmptyBlock(support)||!mc.level.getBlockState(support).isSolid())return;
-  int old=p.getInventory().selected,slot=-1;
+  int old=getSelected(p),slot=-1;
   for(int i=0;i<9;i++)if(p.getInventory().getItem(i).getItem() instanceof BlockItem){slot=i;break;}
   if(slot<0)return;
   setSelected(p,slot);
   mc.gameMode.useItemOn(p,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(support),Direction.UP,support,false));
   setSelected(p,old);
  }
+ private int getSelected(net.minecraft.client.player.LocalPlayer p){try{Field f=p.getInventory().getClass().getDeclaredField("selected");f.setAccessible(true);return f.getInt(p.getInventory());}catch(ReflectiveOperationException|RuntimeException ignored){return 0;}}
  private void setSelected(net.minecraft.client.player.LocalPlayer p,int slot){try{Field f=p.getInventory().getClass().getDeclaredField("selected");f.setAccessible(true);f.setInt(p.getInventory(),slot);}catch(ReflectiveOperationException|RuntimeException ignored){}}
 }
