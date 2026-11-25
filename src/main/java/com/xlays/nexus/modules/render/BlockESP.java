@@ -18,7 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BlockESP extends Module {
-    private static final int SCAN_RADIUS = 12;
+    private static final int SCAN_SIZE = 12;
+    private static final int SCAN_MIN = -(SCAN_SIZE / 2);
+    private static final int SCAN_MAX = SCAN_MIN + SCAN_SIZE - 1;
     private static final int MAX_MARKERS = 160;
     private static final List<BlockPos> FOUND = new ArrayList<>();
     private static int scanTicks;
@@ -39,8 +41,8 @@ public final class BlockESP extends Module {
         BlockPos center = mc.player.blockPosition();
         List<BlockPos> next = new ArrayList<>();
         for (BlockPos pos : BlockPos.betweenClosed(
-                center.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
-                center.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS))) {
+                center.offset(SCAN_MIN, SCAN_MIN, SCAN_MIN),
+                center.offset(SCAN_MAX, SCAN_MAX, SCAN_MAX))) {
             if (!mc.level.hasChunkAt(pos)) continue;
             var block = mc.level.getBlockState(pos).getBlock();
             if (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE
