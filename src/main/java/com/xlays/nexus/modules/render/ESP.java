@@ -12,7 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 public final class ESP extends Module {
- public ESP(){super("ESP",Category.RENDER,false);}
+ public ESP(){super("ESP",Category.RENDER,false);booleanSetting("3d","3D boxes",()->VisualSettings.esp3d,v->VisualSettings.esp3d=v);booleanSetting("tracers","Show tracers",()->VisualSettings.showTracers,v->VisualSettings.showTracers=v);booleanSetting("nametags","Show nametags",()->VisualSettings.showNametags,v->VisualSettings.showNametags=v);}
  public static void onWorldRender(RenderLevelStageEvent.AfterEntities event){
   if(!(event instanceof RenderLevelStageEvent.AfterEntities)||!NexusClient.enabled("ESP"))return;
   Minecraft mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.options.hideGui)return;
