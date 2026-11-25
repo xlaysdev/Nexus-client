@@ -2,7 +2,7 @@ package com.xlays.nexus;
 
 import com.xlays.nexus.modules.render.VisualSettings;
 import com.xlays.nexus.modules.render.OreESP;
-import com.xlays.nexus.modules.render.ChestESP;
+import com.xlays.nexus.modules.render.ChestESP;\nimport com.xlays.nexus.modules.combat.CrystalAura;\nimport com.xlays.nexus.modules.movement.Speed;
 
 import net.neoforged.fml.loading.FMLPaths;
 
@@ -76,6 +76,12 @@ public final class NexusConfig {
         p.setProperty("hud.scale", Integer.toString(NexusClient.hudScale));
         p.setProperty("theme.accent", Integer.toString(NexusClient.accentIndex));
         p.setProperty("hud.showBackground", Boolean.toString(NexusClient.hudBackground));
+        p.setProperty("speed.blocksPerSecond", Double.toString(Speed.getBlocksPerSecond()));
+        p.setProperty("crystal.targetHostiles", Boolean.toString(CrystalAura.targetHostiles));
+        p.setProperty("crystal.targetPlayers", Boolean.toString(CrystalAura.targetPlayers));
+        p.setProperty("crystal.targetRange", Double.toString(CrystalAura.targetRange));
+        p.setProperty("crystal.placeRange", Double.toString(CrystalAura.placeRange));
+        p.setProperty("crystal.actionDelayMs", Integer.toString(CrystalAura.actionDelayMs));
         p.setProperty("visual.enemyColor", Integer.toString(VisualSettings.enemyColor));
         p.setProperty("visual.friendColor", Integer.toString(VisualSettings.friendColor));
         p.setProperty("visual.blockColor", Integer.toString(VisualSettings.blockColor));
@@ -120,6 +126,12 @@ public final class NexusConfig {
             NexusClient.hudScale = clamp(parse(p, "hud.scale", NexusClient.hudScale), 75, 150);
             NexusClient.accentIndex = clamp(parse(p, "theme.accent", NexusClient.accentIndex), 0, NexusClient.ACCENTS.length - 1);
             NexusClient.hudBackground = Boolean.parseBoolean(p.getProperty("hud.showBackground", Boolean.toString(NexusClient.hudBackground)));
+            Speed.setBlocksPerSecond(parseDouble(p, "speed.blocksPerSecond", Speed.getBlocksPerSecond()));
+            CrystalAura.targetHostiles = Boolean.parseBoolean(p.getProperty("crystal.targetHostiles", Boolean.toString(CrystalAura.targetHostiles)));
+            CrystalAura.targetPlayers = Boolean.parseBoolean(p.getProperty("crystal.targetPlayers", Boolean.toString(CrystalAura.targetPlayers)));
+            CrystalAura.targetRange = clamp(parseDouble(p, "crystal.targetRange", CrystalAura.targetRange), 4.0, 24.0);
+            CrystalAura.placeRange = clamp(parseDouble(p, "crystal.placeRange", CrystalAura.placeRange), 3.0, 6.0);
+            CrystalAura.actionDelayMs = clamp(parse(p, "crystal.actionDelayMs", CrystalAura.actionDelayMs), 50, 1000);
             VisualSettings.enemyColor = parse(p, "visual.enemyColor", VisualSettings.enemyColor);
             VisualSettings.friendColor = parse(p, "visual.friendColor", VisualSettings.friendColor);
             VisualSettings.blockColor = parse(p, "visual.blockColor", VisualSettings.blockColor);
@@ -139,6 +151,19 @@ public final class NexusConfig {
         } catch (IOException e) {
             System.err.println("[NEXUS] Could not load config: " + e.getMessage());
         }
+    }
+
+    private static double parseDouble(Properties p, String key, double fallback) {
+        try {
+            double value = Double.parseDouble(p.getProperty(key, Double.toString(fallback)));
+            return Double.isFinite(value) ? value : fallback;
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     private static int parse(Properties p, String key, int fallback) {
