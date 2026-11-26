@@ -2,17 +2,11 @@ package com.xlays.nexus.modules.render;
 
 import com.xlays.nexus.NexusClient;
 import com.xlays.nexus.modules.Module;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +19,21 @@ public final class BlockESP extends Module {
     private static final List<BlockPos> FOUND = new ArrayList<>();
     private static int scanTicks;
 
-    public BlockESP() { super("BlockESP", Category.RENDER, false);booleanSetting("diamond","Diamond ore",()->VisualSettings.scanDiamond,v->{VisualSettings.scanDiamond=v;refreshFilters();});booleanSetting("debris","Ancient debris",()->VisualSettings.scanDebris,v->{VisualSettings.scanDebris=v;refreshFilters();});booleanSetting("chests","Chests",()->VisualSettings.scanChests,v->{VisualSettings.scanChests=v;refreshFilters();});}
+    public BlockESP() {
+        super("BlockESP", Category.RENDER, false);
+        booleanSetting("diamond", "Diamond ore", () -> VisualSettings.scanDiamond, v -> {
+            VisualSettings.scanDiamond = v;
+            refreshFilters();
+        });
+        booleanSetting("debris", "Ancient debris", () -> VisualSettings.scanDebris, v -> {
+            VisualSettings.scanDebris = v;
+            refreshFilters();
+        });
+        booleanSetting("chests", "Chests", () -> VisualSettings.scanChests, v -> {
+            VisualSettings.scanChests = v;
+            refreshFilters();
+        });
+    }
 
     public static void refreshFilters() {
         FOUND.clear();
@@ -34,7 +42,8 @@ public final class BlockESP extends Module {
 
     @Override
     public void onTick() {
-        if (Minecraft.getInstance().player == null || Minecraft.getInstance().level == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) {
             FOUND.clear();
             scanTicks = 0;
             return;
@@ -42,7 +51,6 @@ public final class BlockESP extends Module {
         if (++scanTicks < 10) return;
         scanTicks = 0;
 
-        Minecraft mc = Minecraft.getInstance();
         BlockPos center = mc.player.blockPosition();
         List<BlockPos> next = new ArrayList<>();
         for (BlockPos pos : BlockPos.betweenClosed(
@@ -64,32 +72,23 @@ public final class BlockESP extends Module {
         FOUND.addAll(next);
     }
 
-    public static void onWorldRender(RenderLevelStageEvent.AfterEntities event) {
+    public static void onWorldRender(net.neoforged.neoforge.client.event.RenderLevelStageEvent.AfterEntities event) {
         if (!NexusClient.enabled("BlockESP") || FOUND.isEmpty()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.options.hideGui) return;
 
-        PoseStack pose = event.getPoseStack();
-        if (pose == null) return;
-        Vec3 camera = mc.gameRenderer.getMainCamera().position();
-        pose.pushPose();
-        pose.translate(-camera.x, -camera.y, -camera.z);
-
-        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        var type = RenderUtil.lineType();
-        if (type == null) {
-            pose.popPose();
-            return;
-        }
-
-        VertexConsumer out = buffers.getBuffer(type);
+        // Use the engine's Gizmo renderer rather than submitting incomplete vertices
+        // to the custom lines render type. This avoids the ESP vertex-format crash.
         for (BlockPos pos : FOUND) {
-            AABB box = new AABB(pos.getX(), pos.getY(), pos.getZ(),
-                    pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1).inflate(.015);
-            ShapeRenderer.renderShape(pose, out, Shapes.create(box),
-                    0, 0, 0, VisualSettings.blockColor, 2);
+            if (!mc.level.hasChunkAt(pos)) continue;
+            Gizmos.cuboid(pos, GizmoStyle.stroke(VisualSettings.blockColor, 2.0F))
+                    .setAlwaysOnTop();
         }
-        buffers.endBatch(type);
-        pose.popPose();
+    }
+
+    @Override
+    protected void onDisable() {
+        FOUND.clear();
+        scanTicks = 0;
     }
 }
