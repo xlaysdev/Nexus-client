@@ -1,5 +1,8 @@
 package com.xlays.nexus.modules;
 
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -7,14 +10,15 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class ModuleManager {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private final Map<String, Module> modules = new LinkedHashMap<>();
 
     public <T extends Module> T register(T module) {
-        // Registration must never leave a module active during client initialization.
         module.setEnabled(false);
         String key = module.name.toLowerCase(java.util.Locale.ROOT);
-        if (modules.putIfAbsent(key, module) != null)
+        if (modules.putIfAbsent(key, module) != null) {
             throw new IllegalArgumentException("Duplicate module: " + module.name);
+        }
         return module;
     }
 
@@ -43,10 +47,34 @@ public final class ModuleManager {
     }
 
     public void tick() {
-        for (Module module : modules.values()) if (module.enabled) module.onTick();
+        for (Module module : modules.values()) {
+            if (!module.enabled) continue;
+            try {
+                module.onTick();
+            } catch (RuntimeException exception) {
+                quarantine(module, "tick", exception);
+            }
+        }
     }
 
     public void render() {
-        for (Module module : modules.values()) if (module.enabled) module.onRender();
+        for (Module module : modules.values()) {
+            if (!module.enabled) continue;
+            try {
+                module.onRender();
+            } catch (RuntimeException exception) {
+                quarantine(module, "render", exception);
+            }
+        }
+    }
+
+    private void quarantine(Module module, String phase, RuntimeException cause) {
+        LOGGER.error("NEXUS disabled module '{}' after an exception during {}", module.name, phase, cause);
+        try {
+            module.setEnabled(false);
+        } catch (RuntimeException disableFailure) {
+            LOGGER.error("NEXUS failed to cleanly disable module '{}'", module.name, disableFailure);
+            module.enabled = false;
+        }
     }
 }
