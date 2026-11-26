@@ -26,6 +26,9 @@ public final class ChestESP extends Module {
 
     public int radius() { return radius; }
 
+    // Compatibility with NexusConfig's existing persisted-setting loader.
+    public void radius(int value) { setRadius(value); }
+
     public void setRadius(int value) {
         radius = Math.max(4, Math.min(48, value));
         restartScan();
