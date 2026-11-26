@@ -14,8 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Cached, spherical ore scanner adapted for NEXUS V1. */
 public final class OreESP extends com.xlays.nexus.modules.Module {
+    private static final int BLOCKS_PER_TICK = 4096;
+
     public enum OreGroup {
         COAL("Coal", Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE),
         IRON("Iron", Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE),
@@ -37,8 +38,10 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
     }
 
     private static int radius = 12;
-    private static int tickCounter;
+    private static int cursor;
+    private static BlockPos scanCenter;
     private static final List<BlockPos> FOUND = new ArrayList<>();
+    private static final List<BlockPos> PENDING = new ArrayList<>();
     private static final EnumMap<OreGroup, Boolean> FILTERS = new EnumMap<>(OreGroup.class);
     private static final Set<Block> ACTIVE_BLOCKS = new HashSet<>();
 
@@ -47,15 +50,18 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
         rebuildTargets();
     }
 
-    public OreESP() { super("OreESP", Category.RENDER, false); }
+    public OreESP() {
+        super("OreESP", Category.RENDER, false);
+    }
 
     @Override public void onTick() { tick(); }
     @Override public void onRender() { render(); }
 
     public static int getRadius() { return radius; }
+
     public static void setRadius(int value) {
         radius = Math.max(4, Math.min(32, value));
-        tickCounter = 9;
+        restartScan();
     }
 
     public static boolean isEnabled(OreGroup group) {
@@ -66,7 +72,7 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
         FILTERS.put(group, enabled);
         rebuildTargets();
         FOUND.clear();
-        tickCounter = 9;
+        restartScan();
     }
 
     private static void rebuildTargets() {
@@ -76,36 +82,55 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
         }
     }
 
+    private static void restartScan() {
+        cursor = 0;
+        scanCenter = null;
+        PENDING.clear();
+    }
+
     public static void tick() {
         if (!NexusClient.enabled("OreESP")) {
-            FOUND.clear();
+            clear();
             return;
         }
+
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || ACTIVE_BLOCKS.isEmpty()) {
-            FOUND.clear();
+            clear();
             return;
         }
-        if (++tickCounter < 10) return;
-        tickCounter = 0;
 
-        BlockPos center = mc.player.blockPosition();
-        int r2 = radius * radius;
-        List<BlockPos> found = new ArrayList<>();
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    if (x * x + y * y + z * z > r2) continue;
-                    BlockPos pos = center.offset(x, y, z);
-                    if (!mc.level.hasChunkAt(pos)) continue;
-                    if (ACTIVE_BLOCKS.contains(mc.level.getBlockState(pos).getBlock())) {
-                        found.add(pos.immutable());
-                    }
-                }
+        BlockPos playerPos = mc.player.blockPosition();
+        if (scanCenter == null || scanCenter.distSqr(playerPos) > 16) {
+            scanCenter = playerPos.immutable();
+            cursor = 0;
+            PENDING.clear();
+        }
+
+        int diameter = radius * 2 + 1;
+        int total = diameter * diameter * diameter;
+        int processed = 0;
+
+        while (cursor < total && processed++ < BLOCKS_PER_TICK) {
+            int x = cursor % diameter - radius;
+            int y = (cursor / diameter) % diameter - radius;
+            int z = cursor / (diameter * diameter) - radius;
+            cursor++;
+
+            if (x * x + y * y + z * z > radius * radius) continue;
+            BlockPos pos = scanCenter.offset(x, y, z);
+            if (!mc.level.hasChunkAt(pos)) continue;
+
+            if (ACTIVE_BLOCKS.contains(mc.level.getBlockState(pos).getBlock())) {
+                PENDING.add(pos.immutable());
             }
         }
-        FOUND.clear();
-        FOUND.addAll(found);
+
+        if (cursor >= total) {
+            FOUND.clear();
+            FOUND.addAll(PENDING);
+            restartScan();
+        }
     }
 
     public static void render() {
@@ -114,9 +139,11 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
         if (mc.player == null || mc.level == null) return;
 
         for (BlockPos pos : FOUND) {
+            if (!mc.level.hasChunkAt(pos)) continue;
             Block block = mc.level.getBlockState(pos).getBlock();
             if (ACTIVE_BLOCKS.contains(block)) {
-                Gizmos.cuboid(pos, GizmoStyle.stroke(colorFor(block), 2.0F)).setAlwaysOnTop();
+                Gizmos.cuboid(pos, GizmoStyle.stroke(colorFor(block), 2.0F))
+                        .setAlwaysOnTop();
             }
         }
     }
@@ -136,6 +163,6 @@ public final class OreESP extends com.xlays.nexus.modules.Module {
 
     public static void clear() {
         FOUND.clear();
-        tickCounter = 0;
+        restartScan();
     }
 }
